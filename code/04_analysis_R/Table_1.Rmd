@@ -1,0 +1,235 @@
+---
+title: 'Table 1: Characteristics of individuals experiencing COVID-19 events, stratified by wave'
+author: 'Chris Tomlinson'
+date: 'Knitted on `r date()`'
+
+output:
+  html_document:
+    df_print: paged
+---
+
+**Description** 
+
+This notebook aggregates the data within `ccu013_covid_events_demographics` and stratifies per wave, to produce a series of 'Table 1's.  
+
+> Characteristics of people with a confirmed or suspected COVID-19 diagnosis, stratified by hospitalisation, critical care and deaths with comparison between wave 1 and 2. Values are numbers (percentages) unless otherwise specified. Ethnicity information is derived from both primary care and hospitalization records. Patients at high risk for developing complications from infection were identified from primary care using the NHS Digital SNOMED flag term. Comorbidities (Stroke/Transient Ischaemic Attack (TIA), Myocardial Infarction (MI), Diabetes & Obesity) ascertained from both Primary & Secondary care records. * indicates p < 0.001
+  
+**Project(s)** CCU013
+
+**Paper** Characterising COVID-19 related events in a nationwide electronic health record cohort of 55.9 million people in England
+ 
+**Author(s)** Chris Tomlinson
+ 
+**Reviewer(s)** 
+ 
+**Date last updated** 2021-06-17
+ 
+**Date last reviewed** *NA*
+ 
+**Date last run** `r date()`
+ 
+**Data input**  
+* `ccu013_covid_events_demographics_paper_cohort` 1 row per patient
+
+**Data output**  
+* Self-contained as the knitted `.html` file from this notebook
+
+**Software and versions** `SQL`, `R`
+ 
+**Packages and versions**
+
+```{r config}
+# Load libraries prior to sessionInfo() to ensure documented
+library(dplyr)
+library(tidyr)
+library(magrittr)
+library(stringr)
+library(tableone)
+
+warning("Requires authenticated connection to Spark saved as 'con'")
+source("/mnt/efs/c.tomlinson/dbConnect.R")
+```
+
+```{r sessionInfo}
+sessionInfo()
+```
+
+# 1. Load cohort & pre-process
+
+For wave comparison we will retain `date_first` and split on this
+
+```{r cohort}
+# Load time ~ 60 seconds
+cohort = dbGetQuery(con, "SELECT * FROM dars_nic_391419_j3w9t_collab.ccu013_covid_events_demographics_paper_cohort")
+
+# Cleaning params
+# Specify age bins + labels
+# NB descriptive paper bins, not OpenSafely
+age_breaks = c(-Inf, 18, 30, 50, 70, Inf) # Use Inf & -Inf as ? 0 not inclusive
+age_brackets = c("Under18", "18-29", "30-49", "50-69", "Over70")
+
+
+cohort %<>% 
+  select(-c(person_id_deid, 
+            # date_first, keep this to allow splitting on waves
+            date_death,
+            `0_Covid_infection`, # = 1 for all in table
+            dob,
+            lsoa,
+            DECI_IMD)) %>% 
+  # Sex
+  mutate(sex = case_when(sex == '1' ~ 'Male', 
+                         sex == '2' ~ 'Female')) %>% 
+  # Age 
+  # Currently no NAs (encoded as 999) or Unknowns 
+  # mutate(age = na_if(age, 999)) %>% 
+  mutate(age = as.numeric(age)) %>% 
+  # Add binned ages, as per descriptive paper
+  mutate(age_bin = cut(age, breaks = age_breaks, labels = age_brackets)) %>% 
+  select(-age) %>% 
+  # Factorise!
+  mutate(across(c(sex, 
+                  age_bin, 
+                  ethnic_group, 
+                  imd_quintile, 
+                  high_risk, 
+                  long_covid, 
+                  stroke_prev, 
+                  MI_prev, 
+                  diabetes_prev, 
+                  obesity_prev),
+                as.factor)) %>% 
+  # re-level
+  mutate(ethnic_group = relevel(ethnic_group, ref='White')) %>% 
+  # OUTCOMES
+  # Create binary critical_care variable for filtering
+  # NB must be done prior to factorisation as logical tests don't work on factors
+  mutate(critical_care = if_else(`03_ICU_admission` | 
+                                 `03_NIV_treatment` | 
+                                 `03_IMV_treatment` | 
+                                 `03_ECMO_treatment` 
+                                 == 1, 
+                                 1, 0)) %>%
+  # Factorise outcomes to get counts & % instead of mean(sd)
+  mutate(across(c(death,
+                  critical_care,
+                  `01_Covid_positive_test`, 
+                  `01_GP_covid_diagnosis`, 
+                  `02_Covid_admission`, 
+                  `03_ECMO_treatment`, 
+                  `03_ICU_admission`, 
+                  `03_IMV_treatment`, 
+                  `03_NIV_treatment`,
+                  `04_Fatal_with_covid_diagnosis`,
+                  `04_Fatal_without_covid_diagnosis`,
+                  `04_Covid_inpatient_death`
+                  ),
+                as.factor)) %>% 
+  # re-order columns to get desired layout of table 1 rows
+  relocate( # Outcomes first
+          `01_Covid_positive_test`, 
+          `01_GP_covid_diagnosis`, 
+          `02_Covid_admission`, 
+          critical_care,
+          `03_ECMO_treatment`, 
+          `03_ICU_admission`, 
+          `03_IMV_treatment`, 
+          `03_NIV_treatment`,
+          death,
+          `04_Fatal_with_covid_diagnosis`,
+          `04_Fatal_without_covid_diagnosis`,
+          `04_Covid_inpatient_death`,
+          # Demographics
+          sex,
+          age_bin,
+          ethnic_group,
+          imd_quintile,
+          high_risk,
+          long_covid,
+          stroke_prev,
+          MI_prev,
+          diabetes_prev,
+          obesity_prev
+          )
+# Trim the "01_.." prefix
+names(cohort) %<>%
+  str_replace("^0[1-4].", "")
+# Covid -> COVID-19
+names(cohort) %<>%
+  str_replace("Covid", "COVID-19")
+names(cohort) %<>%
+  str_replace("covid_diagnosis", "COVID-19_diagnosis")
+names(cohort) %<>%
+  str_replace("long_covid", "long_COVID")
+```
+
+
+# All Cases (no waves)
+```{r}
+cohort %>%
+  select(-date_first) %>% 
+  CreateTableOne(data=.) %>% 
+  kableone(., format.args=list(big.mark=","))
+```
+
+# Split into waves
+
+```{r wave_split}
+wave_1_start = "2020-03-20"
+wave_1_end = "2020-05-29"
+wave_2_start = "2020-09-30"
+wave_2_end = "2021-02-12"
+
+cohort %<>% 
+  mutate(wave = if_else(date_first >= wave_1_start & 
+                          date_first <= wave_1_end, 
+                        1, 1.5) # name inter-wave period as 1.5
+         ) %>%
+  mutate(wave = if_else(date_first >= wave_2_start & 
+                          date_first <= wave_2_end, 
+                        2, wave)
+         ) %>% 
+  select(-date_first)
+```
+
+## All patients, stratified by wave  
+* NB vastly different numbers: uneven durations + much greater testing  
+* Therefore this is not used in the manuscript at present but included here for completion  
+```{r}
+cohort %>%
+  filter(wave != 1.5) %>% 
+  CreateTableOne(data=.,
+                 strata = "wave") %>% 
+  kableone()
+```
+## Subset to hospitalised patients, stratified by wave
+This should be less sensitive to the increase in testing  
+```{r}
+cohort %>%
+  filter(wave != 1.5,
+         `COVID-19_admission` == 1) %>% 
+  CreateTableOne(data=.,
+                 strata = "wave") %>% 
+  kableone()
+```
+## Subset to only `critical_care` patients, stratified by wave  
+```{r}
+cohort %>%
+  filter(wave != 1.5,
+         critical_care == 1) %>% 
+  CreateTableOne(data=.,
+                 strata = "wave") %>% 
+  kableone()
+```
+## Subset to only deceased patients, stratified by wave  
+```{r}
+cohort %>%
+  filter(wave != 1.5,
+         death == 1) %>% 
+  CreateTableOne(data=.,
+                 strata = "wave") %>% 
+  kableone()
+```
+
+# Additional workflow steps  
+To my knowledge, `tableOne()` doesn't allow for multiple groups & stratification. Workaround is therefore to copy and paste the output above into google sheets next to each other and then in to the manuscript.  
