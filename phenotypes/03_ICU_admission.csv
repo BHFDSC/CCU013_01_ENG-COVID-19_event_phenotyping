@@ -1,0 +1,3 @@
+covid_phenotype,clinical_code,terminology,description,covid_status,source
+03_ICU_admission,,,DateAdmittedICU IS NOT null,confirmed,CHESS
+03_ICU_admission,,,id is in hes_cc table,confirmed,HES CC
