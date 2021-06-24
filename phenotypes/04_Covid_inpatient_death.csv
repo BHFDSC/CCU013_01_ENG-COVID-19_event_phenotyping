@@ -1,0 +1,9 @@
+covid_phenotype,clinical_code,terminology,description,covid_status,source
+04_Covid_inpatient_death,,,DISMETH = 4 (Died),suspected,HES APC
+04_Covid_inpatient_death,,,DISDEST = 79 (Not applicable - PATIENT died or still birth),confirmed,HES APC
+04_Covid_inpatient_death,,,DISDEST = 79 (Not applicable - PATIENT died or still birth),suspected,HES APC
+04_Covid_inpatient_death,,,DISMETH = 4 (Died),confirmed,HES APC
+04_Covid_inpatient_death,,,DISCHARGE_DESTINATION_HOSPITAL_PROVIDER_SPELL = 79 (Not applicable - PATIENT died or still birth),confirmed,SUS
+04_Covid_inpatient_death,,,DISCHARGE_METHOD_HOSPITAL_PROVIDER_SPELL = 4 (Died),confirmed,SUS
+04_Covid_inpatient_death,,,DISCHARGE_METHOD_HOSPITAL_PROVIDER_SPELL = 4 (Died),suspected,SUS
+04_Covid_inpatient_death,,,DISCHARGE_DESTINATION_HOSPITAL_PROVIDER_SPELL = 79 (Not applicable - PATIENT died or still birth),suspected,SUS
