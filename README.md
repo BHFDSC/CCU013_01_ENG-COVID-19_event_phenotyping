@@ -1,15 +1,18 @@
-# High-throughput electronic health record phenotyping approaches
+# Characterising COVID-19 related events in a nationwide electronic health record cohort of 55.9 million people in England
 
-## Project description
+## How to cite this work
+> Citation goes here
 
-When patients interact with physicians, or get admitted into hospital, information is collected electronically on symptoms, diagnoses, laboratory test results, and prescriptions. This information is stored in Electronic Health Records (EHR) and is a valuable resource for researchers and clinicians for improving health and healthcare.
+## Code
 
-EHRs are however of variable detail and quality and contain many inconsistencies. Before EHR can be analysed, researchers need to spend a considerable amount of time and effort to identify which patients have (or don’t have) a particular disease, or extract individual measurements (e.g. blood pressure, or smoking status) from billions of rows of data.
+Click [here](https://github.com/BHFDSC/CCU013_01_ENG-COVID-19_event_phenotyping/tree/main/code) to view the analysis code.
 
-This project will create and evaluate different approaches for extracting this information from complex EHR so it can be analysed in CVD-COVID-UK. This is particularly important as our understanding of COVID is rapidly developing and researchers need to accurately explore and characterise the impact that COVID infection has in patients in the long term (also known as ‘long COVID’) which affects multiple organ systems.
-
-The approaches developed in this project will be used by all research projects in the consortium and will also be published as open source for the wider scientific and medical community to use. This will help to maximize the benefits of using EHR data, enable the reproducibility of research and shorten the time required to analyse data to directly improve human healthcare and health.
+Phenotyping algorithms and codelists are available [here](https://github.com/BHFDSC/CCU013_01_ENG-COVID-19_event_phenotyping/tree/main/phenotypes)
 
 ## Project approval
 
 This project has been approved by the CVD-COVID-UK Approvals & Oversight Board (Project ID: CCU013).
+
+## License
+
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use this software except in compliance with the License. You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0. Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
