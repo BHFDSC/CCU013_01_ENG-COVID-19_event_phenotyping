@@ -1,6 +1,9 @@
 <image src="BHFDSC_logo.png"
     align="right"
-    width=516>
+    width=225>  
+<br>
+<br>
+
 # Characterising COVID-19 related events in a nationwide electronic health record cohort of 55.9 million people in England
 
 ## How to cite this work
