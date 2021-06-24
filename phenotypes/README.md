@@ -26,6 +26,12 @@ All 10 of these COVID-19 event phenotypes are included within `0_master_COVID19_
     2.  `opensafely-nice-managing-the-long-term-effects-of-covid-19` @ [OpenCodelists](https://www.opencodelists.org/codelist/opensafely/nice-managing-the-long-term-effects-of-covid-19/)  
     3. `opensafely-referral-and-signposting-for-long-covid` @ [OpenCodelists](https://www.opencodelists.org/codelist/opensafely/referral-and-signposting-for-long-covid/)  
 2. `high_risk` produced following [NHS-Digital Guidance on 'How to flag patients as high risk'](https://digital.nhs.uk/coronavirus/shielded-patient-list/guidance-for-general-practice#how-to-flag-patients-as-high-risk)  
+3. Comorbidities from [descriptive paper](https://doi.org/10.1136/bmj.n826):
+    1. `stroke_prev`  
+    2. `MI_prev`  
+    3. `diabetes_prev`  
+    4. `obesity_prev`  
+
 <br>  
 
 
@@ -138,3 +144,16 @@ All 10 of these COVID-19 event phenotypes are included within `0_master_COVID19_
 | **code**         | **term**                                                                                                                                       | **terminology** | **organisation** |
 |------------------|------------------------------------------------------------------------------------------------------------------------------------------------|-----------------|------------------|
 | 1300561000000107 | High risk category for developing complication from coronavirus disease 19 caused by severe acute respiratory syndrome coronavirus 2 infection | SNOMED CT       | NHS Digital      |
+
+## 3. Comorbidity phenotype codelists  
+
+The following phenotypes are identified using the codelists used in:
+> Wood A, Denholm R, Hollings S, Cooper JA, Ip S, Walker V, Denaxas S, Akbari A, Banerjee A, Whiteley W, Lai A, Sterne J, Sudlow C, CVD-COVID-UK Consortium. 2021. Linked electronic health records for research on a nationwide cohort of more than 54 million people in England: data resource. BMJ 2021;373:n826. [https://doi.org/10.1136/bmj.n826](https://doi.org/10.1136/bmj.n826)  
+
+1. `stroke_prev`  
+2. `MI_prev`  
+3. `diabetes_prev`  
+4. `obesity_prev`  
+
+Codelists for these phenotypes are available at the paper's repository: 
+> [`https://github.com/BHFDSC/Linked-EHR-England-2021/tree/main/Phenotypes`](https://github.com/BHFDSC/Linked-EHR-England-2021/tree/main/Phenotypes)  
