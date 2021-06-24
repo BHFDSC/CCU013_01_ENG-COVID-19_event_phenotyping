@@ -1,4 +1,6 @@
-![BHF Data Science Centre Logo](BHFDSC_logo.png)
+<image src="BHFDSC_logo.png"
+    align="right"
+    width=516>
 # Characterising COVID-19 related events in a nationwide electronic health record cohort of 55.9 million people in England
 
 ## How to cite this work
