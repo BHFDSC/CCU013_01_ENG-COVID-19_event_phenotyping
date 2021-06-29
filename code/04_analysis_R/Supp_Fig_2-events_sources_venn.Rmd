@@ -24,7 +24,7 @@ This notebook extracts the unique `person_id_deids` for each combination of `cov
  
 **Reviewer(s)** 
  
-**Date last updated** 2021-06-15
+**Date last updated** 2021-06-29
  
 **Date last reviewed** UNREVIEWED
  
@@ -87,6 +87,7 @@ display_venn <- function(x, ...){
                               filename = NULL, 
                               # Specify defaults
                               alpha=0.3,
+                              print.mode=c("raw", "percent"),
                               ...)
   grid.draw(venn_object)
 }
