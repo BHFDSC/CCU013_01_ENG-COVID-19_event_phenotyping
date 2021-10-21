@@ -1,19 +1,21 @@
 ---
 layout: phenotype
 title: COVID-19 Positive Test
-name: Covid_positive_test
-phenotype_id: 
+name: COVID-19_positive_test
+phenotype_id: TBC
 type: Biomarker
 group: Infections
 data_sources: 
     - Covid-19 Second Generation Surveillance System
+    - Cardiovascular disease (CVD)-COVID-UK / COVID-IMPACT
+    - NHS Digital TRE
 clinical_terminologies: 
     - NA
 validation:
     - Nil
 codelists:
-    - doe_example_123456_term1.csv
-valid_event_data_range: 23/01/2020 - 31/03/2021
+    - NA
+valid_event_data_range: 24/01/2020 - 31/05/2021
 sex: 
     - Female
     - Male
@@ -23,7 +25,7 @@ publications:
     - Thygesen J. et al. Characterising COVID-19 related events in a nationwide electronic health record cohort of 56 million people in England. Preprint. 2021
 status: ALPHA
 date: 2021-06-29
-modified_date: 2021-06-29
+modified_date: 2021-10-21
 version: 0.1
 ---
 
