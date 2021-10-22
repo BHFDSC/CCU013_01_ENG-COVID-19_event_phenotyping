@@ -4,7 +4,8 @@
 <br>
 <br>
 
-# Characterising COVID-19 related events in a nationwide electronic health record cohort of 55.9 million people in England
+# A comprehensive characterisation of COVID-19 from a nationwide linked electronic health record cohort of 56 million people: phenotypes, severity, pandemic waves, vaccination & trajectories
+**Johan H Thygesen, Christopher Tomlinson & Spiros Denaxas**
 
 ## How to cite this work
 > Citation goes here
@@ -17,7 +18,7 @@ Phenotyping algorithms and codelists are available [here](https://github.com/BHF
 
 ## Project approval
 
-This project has been approved by the CVD-COVID-UK Approvals & Oversight Board (Project ID: CCU013).
+Data access approval was granted to the CVD-COVID-UK consortium (under project proposal CCU013: High-throughput electronic health record phenotyping approaches) through the NHS Digital online [Data Access Request Service](https://digital.nhs.uk/services/data-access-request-service-dars) (ref. DARS-NIC-381078-Y9C5K). NHS Digital data have been made available for research under the [Control of Patient Information (COPI) notice](https://digital.nhs.uk/coronavirus/coronavirus-covid-19-response-information-governance-hub/control-of-patient-information-copi-notice) which mandated the sharing of national electronic health records for COVID-19 research. Further details are available within the supplementary section of the manuscript.
 
 ## License
 
