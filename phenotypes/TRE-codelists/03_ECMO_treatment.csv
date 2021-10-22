@@ -1,4 +1,0 @@
-covid_phenotype,clinical_code,terminology,description,covid_status,source
-03_ECMO_treatment,,,RespiratorySupportECMO == Yes,confirmed,CHESS
-03_ECMO_treatment,X58.1,OPCS,Extracorporeal membrane oxygenation,confirmed,HES APC
-03_ECMO_treatment,X58.1,OPCS,Extracorporeal membrane oxygenation,confirmed,SUS
