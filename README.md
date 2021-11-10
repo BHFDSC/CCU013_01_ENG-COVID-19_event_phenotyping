@@ -4,20 +4,28 @@
 <br>
 <br>
 
-# A comprehensive characterisation of COVID-19 from a nationwide linked electronic health record cohort of 56 million people: phenotypes, severity, pandemic waves, vaccination & trajectories
+# Understanding COVID-19 trajectories from a nationwide linked electronic health record cohort of 56 million people: phenotypes, severity, waves & vaccination
 **Johan H Thygesen, Christopher Tomlinson & Spiros Denaxas**
 
+<br>
+
 ## How to cite this work
+
+Preprint now available on medRxiv:  
 
 > Understanding COVID-19 trajectories from a nationwide linked electronic health record cohort of 56 million people: phenotypes, severity, waves & vaccination.  
 Johan H Thygesen, Christopher R Tomlinson, Sam Hollings, Mehrdad A Mizani, Alex Handy, Ashley Akbari, Amitava Banerjee, Jennifer A Cooper, Alvina G Lai, Kezhi Li, Bilal A Mateen, Naveed Sattar, Reecha Sofat, Ana Torralbo, Honghan Wu, Angela Wood, Jonathan AC Sterne, Christina Pagel, William Whiteley, Cathie Sudlow, Harry Hemingway, Spiros Denaxas, CVD-COVID-UK Consortium.  
 *medRxiv* 2021.11.08.21265312; doi: https://doi.org/10.1101/2021.11.08.21265312
+
+<br>
 
 ## Code
 
 Click [here](https://github.com/BHFDSC/CCU013_01_ENG-COVID-19_event_phenotyping/tree/main/code) to view the analysis code.
 
 Phenotyping algorithms and codelists are available [here](https://github.com/BHFDSC/CCU013_01_ENG-COVID-19_event_phenotyping/tree/main/phenotypes)
+
+<br>
 
 ## Project approval
 
