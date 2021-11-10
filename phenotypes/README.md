@@ -1,36 +1,61 @@
-# Overview of Phenotypes used in *Characterising COVID-19 related events in a nationwide electronic health record cohort of 55.9 million people in England*  
+# Overview of Phenotypes used in *Understanding COVID-19 trajectories from a nationwide linked electronic health record cohort of 56 million people: phenotypes, severity, waves & vaccination*  
 <br>  
 
-## COVID-19 event phenotypes defined within this body of work  
+## How to cite this work
 
-1. `01_Covid_positive_test.csv`  
-2. `01_GP_covid_diagnosis.csv`  
-3. `02_Covid_admission.csv`  
-4. `03_NIV_treatment.csv`  
-5. `03_IMV_treatment.csv`  
-6. `03_ICU_admission.csv`
-7. `03_ECMO_treatment.csv`
-8. `04_Fatal_with_covid_diagnosis.csv`
-9. `04_Fatal_without_covid_diagnosis.csv`
-10. `04_Covid_inpatient_death.csv`  
+Preprint now available on medRxiv:  
 
-<br>  
+> Understanding COVID-19 trajectories from a nationwide linked electronic health record cohort of 56 million people: phenotypes, severity, waves & vaccination.  
+Johan H Thygesen, Christopher R Tomlinson, Sam Hollings, Mehrdad A Mizani, Alex Handy, Ashley Akbari, Amitava Banerjee, Jennifer A Cooper, Alvina G Lai, Kezhi Li, Bilal A Mateen, Naveed Sattar, Reecha Sofat, Ana Torralbo, Honghan Wu, Angela Wood, Jonathan AC Sterne, Christina Pagel, William Whiteley, Cathie Sudlow, Harry Hemingway, Spiros Denaxas, CVD-COVID-UK Consortium.  
+*medRxiv* 2021.11.08.21265312; doi: https://doi.org/10.1101/2021.11.08.21265312
 
-All 10 of these COVID-19 event phenotypes are included within `0_master_COVID19_event_phenotypes.csv`  
-<br>  
+<br>
 
-## Other phenotypes used within this work  
+
+# Phenotypes
+* Where phenotypes use an existing clinical terminology (SNOMED-CT, ICD-10, OPCS-4) then the relevant codelists are supplied as `.csv` files.
+* For phenotypes using proprietary dataset-specific fields then examples are provided using simplified SQL queries in `.sql` files as a form of pseudocode which may be easily ported to different research environments.
+* Researchers working with the NHS Digital Trusted Research environment may find it easier to modify the analytical code from the Databricks notebooks [`CCU013_01_create_table_aliases.py`](https://github.com/BHFDSC/CCU013_01_ENG-COVID-19_event_phenotyping/blob/main/code/01_phenotype_engineering/CCU013_01_create_table_aliases.py) and [`CCU013_02_master_phenotypes.py`](https://github.com/BHFDSC/CCU013_01_ENG-COVID-19_event_phenotyping/blob/main/code/01_phenotype_engineering/CCU013_02_master_phenotypes.py). Note that if working outside the CVD-COVID-UK data access agreement (DARS-NIC-381078-Y9C5K) the database paths will need to be amended accordingly.
+
+
+
+| Phenotype                       	| Dataset      	| Terminology 	| File/codelist                                                                                                                          	|
+|---------------------------------	|--------------	|-------------	|----------------------------------------------------------------------------------------------------------------------------------------	|
+| COVID-19 Positive test          	| SGSS         	| Proprietary 	| [`COVID-19_positive_test_SGSS.sql`](https://github.com/BHFDSC/CCU013_01_ENG-COVID-19_event_phenotyping/blob/main/phenotypes/codelists/COVID-19_positive_test_SGSS.sql)      	|
+| COVID-19 Primary care diagnosis 	| GDPPR        	| SNOMED-CT   	| [`COVID-19_SNOMEDCT.csv`](https://github.com/BHFDSC/CCU013_01_ENG-COVID-19_event_phenotyping/blob/main/phenotypes/codelists/COVID-19_SNOMEDCT.csv)                	|
+| COVID-19 Hospital admission     	| HES APC, SUS 	| ICD-10      	| [`COVID-19_ICD10.csv`](https://github.com/BHFDSC/CCU013_01_ENG-COVID-19_event_phenotyping/blob/main/phenotypes/codelists/COVID-19_ICD10.csv)                   	|
+| COVID-19 Hospital admission     	| CHESS        	| Proprietary 	| [`COVID-19_admission_CHESS.sql`](https://github.com/BHFDSC/CCU013_01_ENG-COVID-19_event_phenotyping/blob/main/phenotypes/codelists/COVID-19_admission_CHESS.sql)         	|
+| NIV treatment                   	| HES APC      	| OPCS-4      	| [`NIV_OPCS4.csv`](https://github.com/BHFDSC/CCU013_01_ENG-COVID-19_event_phenotyping/blob/main/phenotypes/codelists/NIV_OPCS4.csv)                        	|
+|                                 	| HES CC       	| Proprietary 	| [`NIV_HES_CC.sql`](https://github.com/BHFDSC/CCU013_01_ENG-COVID-19_event_phenotyping/blob/main/phenotypes/codelists/NIV_HES_CC.sql)                       	|
+|                                 	| CHESS        	| Proprietary 	| [`NIV_CHESS.sql`](https://github.com/BHFDSC/CCU013_01_ENG-COVID-19_event_phenotyping/blob/main/phenotypes/codelists/NIV_CHESS.sql)                        	|
+| IMV treatment                   	| HES APC      	| OPCS-4      	| [`IMV_OPCS4.csv`](https://github.com/BHFDSC/CCU013_01_ENG-COVID-19_event_phenotyping/blob/main/phenotypes/codelists/IMV_OPCS4.csv)                        	|
+|                                 	| HES CC       	| Proprietary 	| [`IMV_HES_CC.sql`](https://github.com/BHFDSC/CCU013_01_ENG-COVID-19_event_phenotyping/blob/main/phenotypes/codelists/IMV_HES_CC.sql)                       	|
+|                                 	| CHESS        	| Proprietary 	| [`IMV_CHESS.sql`](https://github.com/BHFDSC/CCU013_01_ENG-COVID-19_event_phenotyping/blob/main/phenotypes/codelists/IMV_CHESS.sql)                        	|
+| COVID-19 ICU admission          	| HES CC       	| Proprietary 	| [`COVID-19_ICU_admission_HES_CC.sql`](https://github.com/BHFDSC/CCU013_01_ENG-COVID-19_event_phenotyping/blob/main/phenotypes/codelists/COVID-19_ICU_admission_HES_CC.sql)    	|
+|                                 	| CHESS        	| Proprietary 	| [`COVID-19_ICU_admission_CHESS.sql`](https://github.com/BHFDSC/CCU013_01_ENG-COVID-19_event_phenotyping/blob/main/phenotypes/codelists/COVID-19_ICU_admission_CHESS.sql)     	|
+| ECMO treatment                  	| HES APC      	| OPCS-4      	| [`ECMO_OPCS4.csv`](https://github.com/BHFDSC/CCU013_01_ENG-COVID-19_event_phenotyping/blob/main/phenotypes/codelists/ECMO_OPCS4.csv)                       	|
+|                                 	| CHESS        	| Proprietary 	| [`ECMO_CHESS.sql`](https://github.com/BHFDSC/CCU013_01_ENG-COVID-19_event_phenotyping/blob/main/phenotypes/codelists/ECMO_CHESS.sql)                       	|
+| Death with COVID-19 diagnosis   	| Deaths       	| ICD-10      	| [`COVID-19_ICD10.csv`](https://github.com/BHFDSC/CCU013_01_ENG-COVID-19_event_phenotyping/blob/main/phenotypes/codelists/COVID-19_ICD10.csv)                   	|
+| COVID-19 inpatient death        	| HES APC, SUS 	| Proprietary 	| [`COVID-19_inpatient_death_HES_APC.sql`](https://github.com/BHFDSC/CCU013_01_ENG-COVID-19_event_phenotyping/blob/main/phenotypes/codelists/COVID-19_inpatient_death_HES_APC.sql) 	|
+
+---
+
+# Other phenotypes used within this work  
 
 1. `long-COVID` based on an aggregation across the following three [OpenSAFELY codelists](https://www.opencodelists.org/) these are best accessed on the [OpenSAFELY website](https://www.opencodelists.org/) however codelists and version ids used are committed to this repository for posterity:
     1. `opensafely-assessment-instruments-and-outcome-measures-for-long-covid` @ [OpenCodelists](https://www.opencodelists.org/codelist/opensafely/assessment-instruments-and-outcome-measures-for-long-covid/)  
     2.  `opensafely-nice-managing-the-long-term-effects-of-covid-19` @ [OpenCodelists](https://www.opencodelists.org/codelist/opensafely/nice-managing-the-long-term-effects-of-covid-19/)  
     3. `opensafely-referral-and-signposting-for-long-covid` @ [OpenCodelists](https://www.opencodelists.org/codelist/opensafely/referral-and-signposting-for-long-covid/)  
+
+    > Clinical coding of long COVID in English primary care: a federated analysis of 58 million patient records in situ using OpenSAFELY
+The OpenSAFELY Collaborative, Alex J Walker, Brian MacKenna, Peter Inglesby, Christopher T Rentsch, Helen J Curtis, Caroline E Morton, Jessica Morley, Amir Mehrkar, Seb Bacon, George Hickman, Chris Bates, Richard Croker, David Evans, Tom Ward, Jonathan Cockburn, Simon Davy, Krishnan Bhaskaran, Anna Schultze, Elizabeth J Williamson, William J Hulme, Helen I McDonald, Laurie Tomlinson, Rohini Mathur, Rosalind M Eggo, Kevin Wing, Angel YS Wong, Harriet Forbes, John Tazare, John Parry, Frank Hester, Sam Harper, Shaun O’Hanlon, Alex Eavis, Richard Jarvis, Dima Avramov, Paul Griffiths, Aaron Fowles, Nasreen Parkes, Ian J Douglas, Stephen JW Evans, Liam Smeeth, Ben Goldacre
+medRxiv 2021.05.06.21256755; doi: https://doi.org/10.1101/2021.05.06.21256755
+
 2. `high_risk` produced following [NHS-Digital Guidance on 'How to flag patients as high risk'](https://digital.nhs.uk/coronavirus/shielded-patient-list/guidance-for-general-practice#how-to-flag-patients-as-high-risk)  
-3. Comorbidities from [descriptive paper](https://doi.org/10.1136/bmj.n826):
-    1. `stroke_prev`  
-    2. `MI_prev`  
-    3. `diabetes_prev`  
-    4. `obesity_prev`  
+
+3. [CALIBER phenotypes for comorbidities](https://github.com/spiros/chronological-map-phenotypes)  
+
+    > Kuan V., Denaxas S., Gonzalez-Izquierdo A. et al. _A chronological map of 308 physical and mental health conditions from 4 million individuals in the National Health Service_ published in the Lancet Digital Health - DOI <a href="https://www.thelancet.com/journals/landig/article/PIIS2589-7500(19)30012-3/fulltext">10.1016/S2589-7500(19)30012-3</a>
 
 <br>  
 
@@ -144,16 +169,3 @@ All 10 of these COVID-19 event phenotypes are included within `0_master_COVID19_
 | **code**         | **term**                                                                                                                                       | **terminology** | **organisation** |
 |------------------|------------------------------------------------------------------------------------------------------------------------------------------------|-----------------|------------------|
 | 1300561000000107 | High risk category for developing complication from coronavirus disease 19 caused by severe acute respiratory syndrome coronavirus 2 infection | SNOMED CT       | NHS Digital      |
-
-## 3. Comorbidity phenotype codelists  
-
-The following phenotypes are identified using the codelists used in:
-> Wood A, Denholm R, Hollings S, Cooper JA, Ip S, Walker V, Denaxas S, Akbari A, Banerjee A, Whiteley W, Lai A, Sterne J, Sudlow C, CVD-COVID-UK Consortium. 2021. Linked electronic health records for research on a nationwide cohort of more than 54 million people in England: data resource. BMJ 2021;373:n826. [https://doi.org/10.1136/bmj.n826](https://doi.org/10.1136/bmj.n826)  
-
-1. `stroke_prev`  
-2. `MI_prev`  
-3. `diabetes_prev`  
-4. `obesity_prev`  
-
-Codelists for these phenotypes are available at the paper's repository: 
-> [`https://github.com/BHFDSC/Linked-EHR-England-2021/tree/main/Phenotypes`](https://github.com/BHFDSC/Linked-EHR-England-2021/tree/main/Phenotypes)  
