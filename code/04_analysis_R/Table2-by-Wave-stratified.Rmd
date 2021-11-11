@@ -1,5 +1,5 @@
 ---
-title: 'Table 1: Characteristics of individuals experiencing COVID-19 events, stratified by wave'
+title: 'Table 2: Characteristics of individuals experiencing COVID-19 events, stratified by wave'
 author: 'Chris Tomlinson'
 date: 'Knitted on `r date()`'
 
@@ -230,6 +230,93 @@ cohort %>%
            )
 ```
 
+## ALL COVID-19 Hospitalisations
+```{r}
+cohort %>%
+  filter(hospitalisation == 1) %>% 
+  CreateTableOne(data=.) %>% 
+  print(., 
+        nonnormal = 'multimorbidity', 
+        format.args = list(big.mark = ",")
+        ) %>% 
+  kableone(., 
+           format.args = list(big.mark = ",")
+           )
+```
+
+### Hospitalisations without critical care
+
+```{r}
+cohort %>%
+  filter(hospitalisation == 1,
+         critical_care == 0) %>% 
+  CreateTableOne(data=.) %>% 
+  print(., 
+        nonnormal = 'multimorbidity', 
+        format.args = list(big.mark = ",")
+        ) %>% 
+  kableone(., 
+           format.args = list(big.mark = ",")
+           )
+```
+## ALL ICU admissions
+```{r}
+cohort %>%
+  filter(ICU == 1) %>% 
+  CreateTableOne(data=.) %>% 
+  print(., 
+        nonnormal = 'multimorbidity', 
+        format.args = list(big.mark = ",")
+        ) %>% 
+  kableone(., 
+           format.args = list(big.mark = ",")
+           )
+```
+
+## ALL critical care
+```{r}
+cohort %>%
+  filter(critical_care == 1) %>% 
+  CreateTableOne(data=.) %>% 
+  print(., 
+        nonnormal = 'multimorbidity', 
+        format.args = list(big.mark = ",")
+        ) %>% 
+  kableone(., 
+           format.args = list(big.mark = ",")
+           )
+```
+
+## ALL critical care OUTSIDE ICU
+```{r}
+cohort %>%
+  filter(ICU == 0,
+         critical_care == 1) %>% 
+  CreateTableOne(data=.) %>% 
+  print(., 
+        nonnormal = 'multimorbidity', 
+        format.args = list(big.mark = ",")
+        ) %>% 
+  kableone(., 
+           format.args = list(big.mark = ",")
+           )
+```
+
+## ALL COVID-19 Deaths (no waves)
+```{r}
+cohort %>%
+  filter(death == 1) %>% 
+  CreateTableOne(data=.) %>% 
+  print(., 
+        nonnormal = 'multimorbidity', 
+        format.args = list(big.mark = ",")
+        ) %>% 
+  kableone(., 
+           format.args = list(big.mark = ",")
+           )
+```
+
+
 # Split into waves
 
 ```{r wave_split}
@@ -250,7 +337,7 @@ cohort %<>%
   select(-date_first)
 ```
 
-## All patients, stratified by wave  
+# All patients, stratified by wave  
 * NB vastly different numbers: uneven durations + much greater testing  
 * Therefore this is not used in the manuscript at present but included here for completion  
 ```{r}
@@ -266,7 +353,8 @@ cohort %>%
            format.args = list(big.mark = ",")
            )
 ```
-## Subset to hospitalised patients, stratified by wave
+
+# Subset to ALL hospitalised patients, stratified by wave
 This should be less sensitive to the increase in testing  
 ```{r}
 cohort %>%
@@ -282,7 +370,26 @@ cohort %>%
            format.args = list(big.mark = ",")
            )
 ```
-## Subset to only `critical_care` patients, stratified by wave  
+
+## Subset to hospitalised patients who *don't* receive any critical care
+```{r}
+cohort %>%
+  filter(wave != 1.5,
+         hospitalisation == 1,
+         critical_care == 0) %>% 
+  CreateTableOne(data=.,
+                 strata = "wave") %>% 
+  print(., 
+        nonnormal = 'multimorbidity', 
+        format.args = list(big.mark = ",")
+        ) %>% 
+  kableone(., 
+           format.args = list(big.mark = ",")
+           )
+```
+
+
+# Subset to only `critical_care` patients, stratified by wave  
 ```{r}
 cohort %>%
   filter(wave != 1.5,
@@ -297,7 +404,42 @@ cohort %>%
            format.args = list(big.mark = ",")
            )
 ```
-## Subset to only deceased patients, stratified by wave  
+
+## ICU admissions only
+```{r}
+cohort %>%
+  filter(wave != 1.5,
+         ICU == 1) %>% 
+  CreateTableOne(data=.,
+                 strata = "wave") %>% 
+  print(., 
+        nonnormal = 'multimorbidity', 
+        format.args = list(big.mark = ",")
+        ) %>% 
+  kableone(., 
+           format.args = list(big.mark = ",")
+           )
+```
+
+
+## Critical care OUTSIDE ICU only
+```{r}
+cohort %>%
+  filter(wave != 1.5,
+         critical_care == 1,
+         ICU == 0) %>% 
+  CreateTableOne(data=.,
+                 strata = "wave") %>% 
+  print(., 
+        nonnormal = 'multimorbidity', 
+        format.args = list(big.mark = ",")
+        ) %>% 
+  kableone(., 
+           format.args = list(big.mark = ",")
+           )
+```
+
+#  Subset to only deceased patients, stratified by wave  
 ```{r}
 cohort %>%
   filter(wave != 1.5,
@@ -312,6 +454,7 @@ cohort %>%
            format.args = list(big.mark = ",")
            )
 ```
+
 
 # Additional workflow steps  
 To my knowledge, `tableOne()` doesn't allow for multiple groups & stratification. Workaround is therefore to copy and paste the output above into google sheets next to each other and then in to the manuscript. 

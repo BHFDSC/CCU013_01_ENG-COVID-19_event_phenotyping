@@ -22,6 +22,84 @@
 
 -- COMMAND ----------
 
+SELECT 
+  COUNT(distinct phenotype)
+  FROM 
+    dars_nic_391419_j3w9t_collab.ccu013_covid_events_demographics_paper_cohort as base
+  FULL JOIN
+    (SELECT 
+      person_id_deid, 
+      date, 
+      phenotype, 
+      1 as value 
+    FROM 
+      dars_nic_391419_j3w9t_collab.ccu013_caliber_skinny) 
+      as phenos
+  ON 
+    base.person_id_deid = phenos.person_id_deid
+  WHERE 
+    phenos.date < '2020-01-01'
+
+-- COMMAND ----------
+
+SELECT
+  *
+FROM
+(SELECT 
+  distinct phenotype
+  FROM 
+    dars_nic_391419_j3w9t_collab.ccu013_covid_events_demographics_paper_cohort as base
+  FULL JOIN
+    (SELECT 
+      person_id_deid, 
+      date, 
+      phenotype, 
+      1 as value 
+    FROM 
+      dars_nic_391419_j3w9t_collab.ccu013_caliber_skinny) 
+      as phenos
+  ON 
+    base.person_id_deid = phenos.person_id_deid
+  WHERE 
+    phenos.date < '2020-01-01'
+) as phenos
+INNER JOIN
+  (SELECT phenotype, category FROM dars_nic_391419_j3w9t_collab.ccu013_caliber_category_mapping) as mapping
+ON phenos.phenotype = mapping.phenotype
+
+-- COMMAND ----------
+
+SELECT
+  category,
+  COUNT(distinct mapping.phenotype)
+FROM
+(SELECT 
+  distinct phenotype
+  FROM 
+    dars_nic_391419_j3w9t_collab.ccu013_covid_events_demographics_paper_cohort as base
+  FULL JOIN
+    (SELECT 
+      person_id_deid, 
+      date, 
+      phenotype, 
+      1 as value 
+    FROM 
+      dars_nic_391419_j3w9t_collab.ccu013_caliber_skinny) 
+      as phenos
+  ON 
+    base.person_id_deid = phenos.person_id_deid
+  WHERE 
+    phenos.date < '2020-01-01'
+) as phenos
+INNER JOIN
+  (SELECT phenotype, category FROM dars_nic_391419_j3w9t_collab.ccu013_caliber_category_mapping) as mapping
+ON 
+  phenos.phenotype = mapping.phenotype
+GROUP BY
+  category
+
+-- COMMAND ----------
+
 -- MAGIC %md
 -- MAGIC # Results
 
@@ -94,19 +172,32 @@ FROM
 -- MAGIC ### Mutex Severities
 -- MAGIC These are mutually exclusive phenotypes representing the **worst/most severe** COVID-19 events experienced by each individual patient  
 -- MAGIC   
--- MAGIC > Most individuals with COVID-19 event(s), (89%, n = 3,056,363) avoided hospitalisation or death related to COVID-19. 
+-- MAGIC > Most individuals with COVID-19 event(s), (3094860 89.2%) avoided hospitalisation or death related to COVID-19. 
 
 -- COMMAND ----------
 
 WITH t1 AS 
- (SELECT covid_severity, COUNT(*) AS n 
-  FROM dars_nic_391419_j3w9t_collab.ccu013_covid_severity_paper_cohort
-  GROUP BY covid_severity)
-SELECT covid_severity, n, 
-       n/(SELECT COUNT(*) FROM dars_nic_391419_j3w9t_collab.ccu013_covid_severity_paper_cohort) * 100 as percentage
+ (SELECT severity, COUNT(*) AS n 
+  FROM dars_nic_391419_j3w9t_collab.ccu013_covid_events_demographics_paper_cohort
+  GROUP BY severity)
+SELECT severity, n, 
+       n/(SELECT COUNT(*) FROM dars_nic_391419_j3w9t_collab.ccu013_covid_events_demographics_paper_cohort) * 100 as percentage
 FROM t1
 ORDER BY
-  covid_severity
+  severity
+
+-- COMMAND ----------
+
+WITH t1 AS 
+ (SELECT 'not_hospitalised' as severity, COUNT(*) AS n 
+  FROM dars_nic_391419_j3w9t_collab.ccu013_covid_events_demographics_paper_cohort
+  WHERE severity = '0_positive' OR severity = '1_gp'
+ )
+SELECT severity, n, 
+       ROUND(n/(SELECT COUNT(*) FROM dars_nic_391419_j3w9t_collab.ccu013_covid_events_demographics_paper_cohort) * 100,2) as percentage
+FROM t1
+ORDER BY
+  severity
 
 -- COMMAND ----------
 
@@ -289,6 +380,88 @@ SELECT
   ROUND(SUM(CASE WHEN (death = 1 and 03_ICU_admission = 1) then 1 else 0 end)/SUM(03_ICU_admission)*100,2) as icu_mortality
 FROM
   dars_nic_391419_j3w9t_collab.ccu013_covid_events_demographics_paper_cohort
+
+-- COMMAND ----------
+
+-- MAGIC %md
+-- MAGIC ## CC-outside-ICU mortality
+-- MAGIC > Kaplan-Meier survival analysis (Figure 3) corroborates these results whilst providing additional insight into the temporality of survival. Stratifying critical care treatment by admission to ICU reveals that **mortality is highest for those patients receiving critical care outside of ICU**.
+
+-- COMMAND ----------
+
+SELECT
+  
+  SUM(CASE WHEN (death = 1 and 02_Covid_admission = 1) then 1 else 0 end) as hosp_deaths,
+  ROUND(SUM(CASE WHEN (death = 1 and 02_Covid_admission = 1) then 1 else 0 end)/SUM(02_Covid_admission)*100,2) as hosp_mortality,
+  
+  SUM(CASE WHEN (death = 1 and 02_Covid_admission = 1 and critical_care = 0) then 1 else 0 end) as hosp_noCC_deaths,
+  ROUND(SUM(CASE WHEN (death = 1 and 02_Covid_admission = 1 and critical_care = 0) then 1 else 0 end)/SUM(CASE WHEN (02_Covid_admission = 1 and critical_care = 0) then 1 else 0 end) *100,2) as hosp_noCC_mortality, 
+
+  SUM(CASE WHEN (death = 1 and critical_care = 1) then 1 else 0 end) as cc_deaths,
+  ROUND(SUM(CASE WHEN (death = 1 and critical_care = 1) then 1 else 0 end)/SUM(critical_care)*100,2) as cc_mortality,
+  
+  SUM(CASE WHEN (death = 1 and 03_ICU_admission = 1) then 1 else 0 end) as icu_deaths,
+  ROUND(SUM(CASE WHEN (death = 1 and 03_ICU_admission = 1) then 1 else 0 end)/SUM(03_ICU_admission)*100,2) as icu_mortality,
+  
+  SUM(CASE WHEN (death = 1 and critical_care = 1 and 03_ICU_admission = 0) then 1 else 0 end) as cc_outofICU_deaths,
+  ROUND(SUM(CASE WHEN (death = 1 and critical_care = 1 and 03_ICU_admission = 0) then 1 else 0 end)/SUM(CASE WHEN (critical_care = 1 and 03_ICU_admission = 0) then 1 else 0 end) *100,2) as cc_outofICU_mortality  
+  
+FROM
+  dars_nic_391419_j3w9t_collab.ccu013_covid_events_demographics_paper_cohort
+
+-- COMMAND ----------
+
+-- MAGIC %md
+-- MAGIC ### CC-outside-ICU mortality: Wave 1
+
+-- COMMAND ----------
+
+SELECT
+  SUM(CASE WHEN (death = 1 and 02_Covid_admission = 1) then 1 else 0 end) as hosp_deaths,
+  ROUND(SUM(CASE WHEN (death = 1 and 02_Covid_admission = 1) then 1 else 0 end)/SUM(02_Covid_admission)*100,2) as hosp_mortality,
+  
+  SUM(CASE WHEN (death = 1 and 02_Covid_admission = 1 and critical_care = 0) then 1 else 0 end) as hosp_noCC_deaths,
+  ROUND(SUM(CASE WHEN (death = 1 and 02_Covid_admission = 1 and critical_care = 0) then 1 else 0 end)/SUM(CASE WHEN (02_Covid_admission = 1 and critical_care = 0) then 1 else 0 end) *100,2) as hosp_noCC_mortality, 
+
+  SUM(CASE WHEN (death = 1 and critical_care = 1) then 1 else 0 end) as cc_deaths,
+  ROUND(SUM(CASE WHEN (death = 1 and critical_care = 1) then 1 else 0 end)/SUM(critical_care)*100,2) as cc_mortality,
+  
+  SUM(CASE WHEN (death = 1 and 03_ICU_admission = 1) then 1 else 0 end) as icu_deaths,
+  ROUND(SUM(CASE WHEN (death = 1 and 03_ICU_admission = 1) then 1 else 0 end)/SUM(03_ICU_admission)*100,2) as icu_mortality,
+  
+  SUM(CASE WHEN (death = 1 and critical_care = 1 and 03_ICU_admission = 0) then 1 else 0 end) as cc_outofICU_deaths,
+  ROUND(SUM(CASE WHEN (death = 1 and critical_care = 1 and 03_ICU_admission = 0) then 1 else 0 end)/SUM(CASE WHEN (critical_care = 1 and 03_ICU_admission = 0) then 1 else 0 end) *100,2) as cc_outofICU_mortality  
+FROM
+  dars_nic_391419_j3w9t_collab.ccu013_covid_events_demographics_paper_cohort
+WHERE 
+  date_first >= "2020-03-20" AND date_first <= "2020-05-29" 
+
+-- COMMAND ----------
+
+-- MAGIC %md
+-- MAGIC ### CC-outside-ICU mortality: Wave 2
+
+-- COMMAND ----------
+
+SELECT
+  SUM(CASE WHEN (death = 1 and 02_Covid_admission = 1) then 1 else 0 end) as hosp_deaths,
+  ROUND(SUM(CASE WHEN (death = 1 and 02_Covid_admission = 1) then 1 else 0 end)/SUM(02_Covid_admission)*100,2) as hosp_mortality,
+  
+  SUM(CASE WHEN (death = 1 and 02_Covid_admission = 1 and critical_care = 0) then 1 else 0 end) as hosp_noCC_deaths,
+  ROUND(SUM(CASE WHEN (death = 1 and 02_Covid_admission = 1 and critical_care = 0) then 1 else 0 end)/SUM(CASE WHEN (02_Covid_admission = 1 and critical_care = 0) then 1 else 0 end) *100,2) as hosp_noCC_mortality, 
+
+  SUM(CASE WHEN (death = 1 and critical_care = 1) then 1 else 0 end) as cc_deaths,
+  ROUND(SUM(CASE WHEN (death = 1 and critical_care = 1) then 1 else 0 end)/SUM(critical_care)*100,2) as cc_mortality,
+  
+  SUM(CASE WHEN (death = 1 and 03_ICU_admission = 1) then 1 else 0 end) as icu_deaths,
+  ROUND(SUM(CASE WHEN (death = 1 and 03_ICU_admission = 1) then 1 else 0 end)/SUM(03_ICU_admission)*100,2) as icu_mortality,
+  
+  SUM(CASE WHEN (death = 1 and critical_care = 1 and 03_ICU_admission = 0) then 1 else 0 end) as cc_outofICU_deaths,
+  ROUND(SUM(CASE WHEN (death = 1 and critical_care = 1 and 03_ICU_admission = 0) then 1 else 0 end)/SUM(CASE WHEN (critical_care = 1 and 03_ICU_admission = 0) then 1 else 0 end) *100,2) as cc_outofICU_mortality  
+FROM
+  dars_nic_391419_j3w9t_collab.ccu013_covid_events_demographics_paper_cohort
+WHERE 
+  date_first >= "2020-09-30" AND date_first <= "2021-02-12"
 
 -- COMMAND ----------
 

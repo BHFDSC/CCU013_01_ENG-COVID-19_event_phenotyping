@@ -308,3 +308,19 @@ cohort %>%
            format.args = list(big.mark = ",")
            )
 ```
+
+## ALL COVID Deaths ONLY
+As stratifying by severity only give those individuals where deaths was their only healthcare presentation, we want to show the demographics of all the COVID-19 deaths too.
+```{r all_covid_deaths}
+cohort %>%
+  filter(death_covid == 1) %>% 
+  select(-severity) %>% 
+  CreateTableOne(data=.) %>% 
+  print(., 
+        nonnormal = 'multimorbidity', 
+        format.args = list(big.mark = ",")
+        ) %>% 
+  kableone(., 
+           format.args = list(big.mark = ",")
+           )
+```
