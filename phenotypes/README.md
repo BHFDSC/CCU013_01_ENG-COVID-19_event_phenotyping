@@ -45,7 +45,7 @@ Figure 1 below show how these phenotypes and datasets were used in our manuscrip
 <image src="fig1.png"
     align="center"
 	alt="Flow diagram showing which datasets was used to identify which COVID-19 phenotypes. Also avaiable as figure 1 in our manuscript. "
-    width=225>  
+    >  
 <br>
 <br>
 
