@@ -53,18 +53,9 @@ Figure 1 below show how these phenotypes and datasets were used in our manuscrip
 
 # Other phenotypes used within this work  
 
-1. `long-COVID` based on an aggregation across the following three [OpenSAFELY codelists](https://www.opencodelists.org/) these are best accessed on the [OpenSAFELY website](https://www.opencodelists.org/) however codelists and version ids used are committed to this repository for posterity:
-    1. `opensafely-assessment-instruments-and-outcome-measures-for-long-covid` @ [OpenCodelists](https://www.opencodelists.org/codelist/opensafely/assessment-instruments-and-outcome-measures-for-long-covid/)  
-    2.  `opensafely-nice-managing-the-long-term-effects-of-covid-19` @ [OpenCodelists](https://www.opencodelists.org/codelist/opensafely/nice-managing-the-long-term-effects-of-covid-19/)  
-    3. `opensafely-referral-and-signposting-for-long-covid` @ [OpenCodelists](https://www.opencodelists.org/codelist/opensafely/referral-and-signposting-for-long-covid/)  
+1. `high_risk` produced following [NHS-Digital Guidance on 'How to flag patients as high risk'](https://digital.nhs.uk/coronavirus/shielded-patient-list/guidance-for-general-practice#how-to-flag-patients-as-high-risk)  
 
-    > Clinical coding of long COVID in English primary care: a federated analysis of 58 million patient records in situ using OpenSAFELY
-The OpenSAFELY Collaborative, Alex J Walker, Brian MacKenna, Peter Inglesby, Christopher T Rentsch, Helen J Curtis, Caroline E Morton, Jessica Morley, Amir Mehrkar, Seb Bacon, George Hickman, Chris Bates, Richard Croker, David Evans, Tom Ward, Jonathan Cockburn, Simon Davy, Krishnan Bhaskaran, Anna Schultze, Elizabeth J Williamson, William J Hulme, Helen I McDonald, Laurie Tomlinson, Rohini Mathur, Rosalind M Eggo, Kevin Wing, Angel YS Wong, Harriet Forbes, John Tazare, John Parry, Frank Hester, Sam Harper, Shaun O’Hanlon, Alex Eavis, Richard Jarvis, Dima Avramov, Paul Griffiths, Aaron Fowles, Nasreen Parkes, Ian J Douglas, Stephen JW Evans, Liam Smeeth, Ben Goldacre
-medRxiv 2021.05.06.21256755; doi: https://doi.org/10.1101/2021.05.06.21256755
-
-2. `high_risk` produced following [NHS-Digital Guidance on 'How to flag patients as high risk'](https://digital.nhs.uk/coronavirus/shielded-patient-list/guidance-for-general-practice#how-to-flag-patients-as-high-risk)  
-
-3. [CALIBER phenotypes for comorbidities](https://github.com/spiros/chronological-map-phenotypes)  
+2. [CALIBER phenotypes for comorbidities](https://github.com/spiros/chronological-map-phenotypes)  
 
     > Kuan V., Denaxas S., Gonzalez-Izquierdo A. et al. _A chronological map of 308 physical and mental health conditions from 4 million individuals in the National Health Service_ published in the Lancet Digital Health - DOI <a href="https://www.thelancet.com/journals/landig/article/PIIS2589-7500(19)30012-3/fulltext">10.1016/S2589-7500(19)30012-3</a>
 
@@ -155,28 +146,8 @@ medRxiv 2021.05.06.21256755; doi: https://doi.org/10.1101/2021.05.06.21256755
 <br>  
 
 # Other phenotype codelists
-## 1. `long_covid` phenotype codelists  
-  
-  
-| **phenotype** | **code**         | **term**                                                                              | **terminology** | **organisation** | **codelist_id**                                                       | **id**   | **version** |
-|---------------|------------------|---------------------------------------------------------------------------------------|-----------------|------------------|-----------------------------------------------------------------------|----------|-------------|
-| long_covid    | 1325031000000108 | Referral to post-COVID assessment clinic                                              | SNOMED CT       | OpenSAFELY       | opensafely/referral-and-signposting-for-long-covid                    | 12d06dc0 | 12d06dc0    |
-| long_covid    | 1325051000000101 | Newcastle post-COVID syndrome Follow-up Screening Questionnaire                       | SNOMED CT       | OpenSAFELY       | opensafely/assessment-instruments-and-outcome-measures-for-long-covid | 79c0fa8a | 79c0fa8a    |
-| long_covid    | 1325081000000107 | Assessment using COVID-19 Yorkshire Rehabilitation Screening tool                     | SNOMED CT       | OpenSAFELY       | opensafely/assessment-instruments-and-outcome-measures-for-long-covid | 79c0fa8a | 79c0fa8a    |
-| long_covid    | 1325161000000102 | Post-COVID-19 syndrome                                                                | SNOMED CT       | OpenSAFELY       | opensafely/nice-managing-the-long-term-effects-of-covid-19            | 64f1ae69 | 64f1ae69    |
-| long_covid    | 1325041000000104 | Referral to Your COVID Recovery rehabilitation platform                               | SNOMED CT       | OpenSAFELY       | opensafely/referral-and-signposting-for-long-covid                    | 12d06dc0 | 12d06dc0    |
-| long_covid    | 1325101000000101 | Assessment using Post-COVID-19 Functional Status Scale patient self-report            | SNOMED CT       | OpenSAFELY       | opensafely/assessment-instruments-and-outcome-measures-for-long-covid | 79c0fa8a | 79c0fa8a    |
-| long_covid    | 1325121000000105 | Post-COVID-19 Functional Status Scale patient self-report final scale grade           | SNOMED CT       | OpenSAFELY       | opensafely/assessment-instruments-and-outcome-measures-for-long-covid | 79c0fa8a | 79c0fa8a    |
-| long_covid    | 1325141000000103 | Assessment using Post-COVID-19 Functional Status Scale structured interview           | SNOMED CT       | OpenSAFELY       | opensafely/assessment-instruments-and-outcome-measures-for-long-covid | 79c0fa8a | 79c0fa8a    |
-| long_covid    | 1325151000000100 | Post-COVID-19 Functional Status Scale structured interview                            | SNOMED CT       | OpenSAFELY       | opensafely/assessment-instruments-and-outcome-measures-for-long-covid | 79c0fa8a | 79c0fa8a    |
-| long_covid    | 1325021000000106 | Signposting to Your COVID Recovery                                                    | SNOMED CT       | OpenSAFELY       | opensafely/referral-and-signposting-for-long-covid                    | 12d06dc0 | 12d06dc0    |
-| long_covid    | 1325181000000106 | Ongoing symptomatic disease caused by severe acute respiratory syndrome coronavirus 2 | SNOMED CT       | OpenSAFELY       | opensafely/nice-managing-the-long-term-effects-of-covid-19            | 64f1ae69 | 64f1ae69    |
-| long_covid    | 1325071000000105 | COVID-19 Yorkshire Rehabilitation Screening tool                                      | SNOMED CT       | OpenSAFELY       | opensafely/assessment-instruments-and-outcome-measures-for-long-covid | 79c0fa8a | 79c0fa8a    |
-| long_covid    | 1325061000000103 | Assessment using Newcastle post-COVID syndrome Follow-up Screening Questionnaire      | SNOMED CT       | OpenSAFELY       | opensafely/assessment-instruments-and-outcome-measures-for-long-covid | 79c0fa8a | 79c0fa8a    |
-| long_covid    | 1325131000000107 | Post-COVID-19 Functional Status Scale structured interview final scale grade          | SNOMED CT       | OpenSAFELY       | opensafely/assessment-instruments-and-outcome-measures-for-long-covid | 79c0fa8a | 79c0fa8a    |
-| long_covid    | 1325091000000109 | Post-COVID-19 Functional Status Scale patient self-report                             | SNOMED CT       | OpenSAFELY       | opensafely/assessment-instruments-and-outcome-measures-for-long-covid | 79c0fa8a | 79c0fa8a    |  
-  
-## 2. `high_risk` phenotype codelists  
+
+## 1. `high_risk` phenotype codelists  
 | **code**         | **term**                                                                                                                                       | **terminology** | **organisation** |
 |------------------|------------------------------------------------------------------------------------------------------------------------------------------------|-----------------|------------------|
 | 1300561000000107 | High risk category for developing complication from coronavirus disease 19 caused by severe acute respiratory syndrome coronavirus 2 infection | SNOMED CT       | NHS Digital      |
