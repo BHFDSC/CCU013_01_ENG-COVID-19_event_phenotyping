@@ -18,7 +18,7 @@
 # MAGIC  
 # MAGIC **Date last reviewed** *NA*
 # MAGIC  
-# MAGIC **Date last run** 2021-10-04
+# MAGIC **Date last run** `1/23/2022, 7:41:23 PM`
 # MAGIC  
 # MAGIC **Data input**  
 # MAGIC * `ccu013_covid_trajectory_paper_cohort`
@@ -54,7 +54,6 @@ SELECT
   clinical_code, 
   code as terminology, 
   description, 
-  -- covid_status, -- Remove as no longer in manuscript
   source, 
   COUNT(clinical_code) as n
 FROM
