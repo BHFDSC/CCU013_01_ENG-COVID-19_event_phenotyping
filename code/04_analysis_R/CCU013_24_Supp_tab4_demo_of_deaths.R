@@ -86,7 +86,7 @@ for(i in 1:length(groups)){
   out["gender",names(groups)[i]] <- ""
   gender <- unique(demo[which(demo[,"person_id_deid"] %in% as.character(unlist(groups[i]))),c('person_id_deid','sex')])
   gender$sex <- as.numeric(gender$sex)
-  out["female",names(groups)[i]] <- paste0(sum(gender$sex==2), " (", round(sum(gender$sex==2, na.rm = T) / sum(!is.na(gender$sex)) * 100,1), ")")
+  out["female",names(groups)[i]] <- paste0(sum(gender$sex==2, na.rm = T), " (", round(sum(gender$sex==2, na.rm = T) / sum(!is.na(gender$sex)) * 100,1), ")")
   out["unknown_gender",names(groups)[i]] <- paste0(sum(is.na(gender$sex)), " (", round(sum(is.na(gender$sex)) / uniid * 100,1), ")")
   out["age",names(groups)[i]] <- ""
   age <- unique(demo[which(demo[,"person_id_deid"] %in% as.character(unlist(groups[i]))),c('person_id_deid','age')])
@@ -113,14 +113,14 @@ for(i in 1:length(groups)){
   out["unknown_ethnicity",names(groups)[i]] <- paste0(sum(is.na(ethnicity$ethnic_group)), " (",
                                                       round(sum(is.na(ethnicity$ethnic_group)) / uniid * 100,1) ,")")
   out["imd_fifths", names(groups)[i]] <- ""
-  imd <- unique(demo[which(demo[,"person_id_deid"] %in% as.character(unlist(groups[i]))),c('person_id_deid','imd_quintile')])
-  imd[which(imd[,"imd_quintile"]=="Unknown"), "imd_quintile"] <- NA
-  out["imd_1", names(groups)[i]] <- paste0(sum(imd$imd_quintile=="1", na.rm = T), " (",
-                                           round(sum(imd$imd_quintile=="1",na.rm = T) / length(imd$imd_quintile) * 100,1) ,")")
-  out["imd_5", names(groups)[i]] <- paste0(sum(imd$imd_quintile=="5", na.rm = T), " (",
-                                           round(sum(imd$imd_quintile=="5", na.rm = T) / length(imd$imd_quintile) * 100,1) ,")")
-  out["imd_unknown", names(groups)[i]] <- paste0(sum(is.na(imd$imd_quintile)), " (",
-                                                 round(sum(is.na(imd$imd_quintile)) / length(imd$imd_quintile) * 100,1) ,")")
+  imd <- unique(demo[which(demo[,"person_id_deid"] %in% as.character(unlist(groups[i]))),c('person_id_deid','IMD_quintile')])
+  imd[which(imd[,"IMD_quintile"]=="Unknown"), "IMD_quintile"] <- NA
+  out["imd_1", names(groups)[i]] <- paste0(sum(imd$IMD_quintile=="1", na.rm = T), " (",
+                                           round(sum(imd$IMD_quintile=="1",na.rm = T) / length(imd$IMD_quintile) * 100,1) ,")")
+  out["imd_5", names(groups)[i]] <- paste0(sum(imd$IMD_quintile=="5", na.rm = T), " (",
+                                           round(sum(imd$IMD_quintile=="5", na.rm = T) / length(imd$IMD_quintile) * 100,1) ,")")
+  out["imd_unknown", names(groups)[i]] <- paste0(sum(is.na(imd$IMD_quintile)), " (",
+                                                 round(sum(is.na(imd$IMD_quintile)) / length(imd$IMD_quintile) * 100,1) ,")")
   # Covid events
   events <- unique(traject[which(traject[,"person_id_deid"] %in% as.character(unlist(groups[i]))),c('person_id_deid','covid_phenotype')])
   out["Covid_events",names(groups)[i]] <- ""

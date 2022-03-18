@@ -7,24 +7,26 @@ graph_plotter <- function(g, mylayout, n_ids, size_column, width_column, days_co
   options(scipen = 999)
   widths <- get.edge.attribute(g, width_column)
   mdays <- get.edge.attribute(g, days_column)
-
+  
   threshold1 <- threshold
   threshold2 <- threshold * 10
   round_digts <- 1 # Nb this should be a factor 100
-
+  
   if(plot_days == F){
     # Plot frequency of transitions if above threshold1
     E(g)$labels <- ifelse(widths / n_ids > threshold1, 
                           paste0(signif(widths / n_ids * 100, round_digts), '%'),
                           "")
-    }else{
+  }else{
     # Plot median days between if frequency of transitions is above threshold1
     # E(g)$labels <- ifelse(widths / n_ids > threshold1, paste0(mdays), "") # Days only
-      E(g)$labels <- ifelse(widths / n_ids > threshold1, paste0(signif(widths / n_ids * 100, round_digts), '[',mdays, ']'), "") # freq%[days]
+    E(g)$labels <- ifelse(widths / n_ids > threshold1, paste0(signif(widths / n_ids * 100, round_digts), '[',mdays, ']'), "") # freq%[days]
   }
   
   # Defult line types
-  arrow_widths <- rep(0.5, length(widths))
+  # arrow_widths <- signif(widths / n_ids * 100, round_digts) * 10 # Dose not work great with very big differences between strate, i.e 5% vs 0.3%.
+  # arrow_widths <- rep(widths, length(widths))
+  arrow_widths <- 0.1
   arrow_colors <- rep("grey", length(widths))
   # make lines and labels over threshold1 darker gray
   arrow_colors[widths / n_ids > threshold1] <- "black"
@@ -52,11 +54,11 @@ graph_plotter <- function(g, mylayout, n_ids, size_column, width_column, days_co
        edge.label.cex = 0.9,
        edge.label = E(g)$labels,
        layout = mylayout
-       )
-       mtext(paste0("N individuals: ", format(n_ids, big.mark = ","),
+  )
+  mtext(paste0("N individuals: ", format(n_ids, big.mark = ","),
                " - N affected: ", format(n_ids - n_unaffected, big.mark = ","),
                " - N transitions: ", format(sum(widths), big.mark = ",")), side = 3, padj = 2)
-       mtext(subtitle_on_plot, side = 3) # this is plotted above the mtext above so its more like a title!
+  mtext(subtitle_on_plot, side = 3) # this is plotted above the mtext above so its more like a title!
 }
 
 find_trajectories <- function(tdata){
@@ -107,119 +109,119 @@ create_trajectory_plot <- function(uniid, tdata, folder_path, basefilename, pref
   
   # If pre_processing_done then skip all caluclations parts
   if(!pre_processing_done){
-  
-  #---- Create the trajectories table
-  trajectories <- as.data.frame(table(uniid$trajectory))
-  colnames(trajectories) <- c("trajectory", "count")
-  trajectories$trajectory <- as.character(trajectories$trajectory)
-  
-  
-  # --- Add counts of each trajectory phenotype ----------------------------------
-  print("Adding counts for each phenotype...")
-  covid_phenos <- unique(tdata$trajectory_phenotype)
-  for(i in 1:length(covid_phenos)){
-    uniid[which(uniid[,1]%in%tdata[which(tdata[,"trajectory_phenotype"]==covid_phenos[i]),"person_id_deid"]), covid_phenos[i]] <- 1
-    trajectories[,covid_phenos[i]] <- sapply(trajectories[,"trajectory"], function(X){sum(uniid[,covid_phenos[i]] == 1 & uniid[,'trajectory']==X, na.rm = T)})
-  }
-  if(sum(trajectories[,"count"]) != length(unique(tdata[,"person_id_deid"]))){stop("Individuals are missing in the trajectory table!")}
-  
-  # Save output
-  trajectories <- trajectories[order(trajectories[,"count"], decreasing = T), ]
-  trajectories[,"percent"] <- round(trajectories[,"count"] / nrow(uniid) * 100, digits = 2)
-  print("")
-  print(paste0("Saving trajectories to: ", filename))
-  write.table(trajectories, filename, row.names = F, quote =F , sep = "\t")  
-  
-  
-  # ---- Create input for igraph plotting of graphs -------------------------
-  # This step breaks up the trajectories into pairwise transitions and records all info for these for plotting
-  print("")
-  print("Create input for igraph plotting...")
-  
-  ## Identify first pair to initiate lists
-  mymatch <- grep("->", trajectories[,"trajectory"])[1]
-  xstrings <- unlist(strsplit(trajectories[mymatch,"trajectory"], "->")) # strings are phenotypes
-  firstpair <- paste0(xstrings[1], "->", xstrings[2])
-  
-  ## Initiate pairwise path data frame
-  pairwise_paths <- data.frame(pair = firstpair, 
-                               node1 = xstrings[1], 
-                               node2 = xstrings[2], 
-                               size = 0)
-  
-  # Initialize a list of path transitions to store number of days between events observed per individual
-  daysbetween <- list()
-  
-  ## Calculate size of nodes
-  size_of_nodes <- data.frame(phenotypes = unique(tdata[,"trajectory_phenotype"]), size = 0)
-  
-  # Fill pairwise path, size of nodes and days-between for all trajectories.
-  for(i in 1:nrow(trajectories)){
-    xstrings <- unlist(strsplit(trajectories[i,"trajectory"], "->")) # strings are phenotypes
     
-    if(length(xstrings)>1){
-      ## Get days between events for all individuals and store in the daysbetween list
-      ## (e.g for 3 strings the two columns represents the days between event a - b, b - c)
-      xvalues <- uniid[which(uniid[,"trajectory"] == trajectories[i,1]), "days"]
-      for(a in 1:(length(xstrings)-1)){
-        pathname <- paste0(xstrings[a], "->", xstrings[a+1])
-        # Append path transition to list if not in already 
-        if(!pathname %in% names(daysbetween)){ daysbetween[[pathname]] <- c(0)} # NB! This does not work if the initial vector is empty c(), I subtract the initial zero later on!
-        newnumbers <- as.numeric(sapply(strsplit(xvalues, "->"), "[", a))
-        newnumbers[is.na(newnumbers)] <- 0 
-        daysbetween[[pathname]] <- c(newnumbers, as.numeric(unlist(daysbetween[pathname])))
-      }
-      
-      matched_path <- which(size_of_nodes[,"phenotypes"] == xstrings[1])
-      size_of_nodes[matched_path, "size"] <- size_of_nodes[matched_path, "size"] + trajectories[i,"count"]
-      for(j in 2:length(xstrings)){
-        matched_path <- which(size_of_nodes[,"phenotypes"] == xstrings[j])
-        size_of_nodes[matched_path, "size"] <- size_of_nodes[matched_path, "size"] + trajectories[i,"count"]
-        
-        pair <- paste0(xstrings[j-1], "->", xstrings[j])
-        if(pair %in% pairwise_paths[,"pair"]){
-          matched_dpath <- which(pairwise_paths[,"pair"]==pair)
-          pairwise_paths[matched_dpath, "size"] <- pairwise_paths[matched_dpath, "size"] + trajectories[i,"count"]
-          
-        }else{
-          newrow <- nrow(pairwise_paths) + 1
-          pairwise_paths[newrow, "pair"] <- pair
-          pairwise_paths[newrow, "node1"] <- xstrings[j-1]
-          pairwise_paths[newrow, "node2"] <- xstrings[j]
-          pairwise_paths[newrow, "size"] <- trajectories[i,"count"]
-        }
-      }
-    }else{
-      matched_path <- which(size_of_nodes[,"phenotypes"] == xstrings)
-      size_of_nodes[matched_path, "size"] <- size_of_nodes[matched_path, "size"] + trajectories[i,"count"]
+    #---- Create the trajectories table
+    trajectories <- as.data.frame(table(uniid$trajectory))
+    colnames(trajectories) <- c("trajectory", "count")
+    trajectories$trajectory <- as.character(trajectories$trajectory)
+    
+    
+    # --- Add counts of each trajectory phenotype ----------------------------------
+    print("Adding counts for each phenotype...")
+    covid_phenos <- unique(tdata$trajectory_phenotype)
+    for(i in 1:length(covid_phenos)){
+      uniid[which(uniid[,1]%in%tdata[which(tdata[,"trajectory_phenotype"]==covid_phenos[i]),"person_id_deid"]), covid_phenos[i]] <- 1
+      trajectories[,covid_phenos[i]] <- sapply(trajectories[,"trajectory"], function(X){sum(uniid[,covid_phenos[i]] == 1 & uniid[,'trajectory']==X, na.rm = T)})
     }
-  }
-  
-  # Add phenotype counts
-  for(i in 1:length(covid_phenos)){
-    pairwise_paths[which(pairwise_paths$node1 == covid_phenos[i] | pairwise_paths$node2 == covid_phenos[i]), covid_phenos[i]] <-
-      pairwise_paths[which(pairwise_paths$node1 == covid_phenos[i] | pairwise_paths$node2 == covid_phenos[i]),"size"]
-  }
-  
-  # Add days between
-  for(i in 1:nrow(pairwise_paths)){
-    pathname <- pairwise_paths[i,1]
-    # Last number should always be 0 as that is how the list of days between numbers got initiated
-    all_day_measures <- daysbetween[[pathname]]
-    if(tail(all_day_measures, 1) != 0){stop("Something has gone wrong with the days between calculations - last number not 0!")}
-    all_day_measures <- all_day_measures[1:(length(all_day_measures)-1)] # Remove that inital 0 which was used to start the list!
-    pairwise_paths[i,"n_day_measures"] <- length(daysbetween[[pathname]])
-    pairwise_paths[i,"median_days"] <-  median(daysbetween[[pathname]])
-    pairwise_paths[i,"mean_days"] <- mean(daysbetween[[pathname]]) 
-  }
-  
-  ## Write out paths and node sizes
-  print("")
-  print(paste0("Pair wise paths writen to: ", filename_paths))
-  print(paste0("Sizes of nodes writen to: ", filename_nodes))
-  write.table(pairwise_paths, filename_paths, sep = "\t", quote = F, row.names = F)
-  write.table(size_of_nodes, filename_nodes, sep = "\t", quote = F, row.names = F)
-  
+    if(sum(trajectories[,"count"]) != length(unique(tdata[,"person_id_deid"]))){stop("Individuals are missing in the trajectory table!")}
+    
+    # Save output
+    trajectories <- trajectories[order(trajectories[,"count"], decreasing = T), ]
+    trajectories[,"percent"] <- round(trajectories[,"count"] / nrow(uniid) * 100, digits = 2)
+    print("")
+    print(paste0("Saving trajectories to: ", filename))
+    write.table(trajectories, filename, row.names = F, quote =F , sep = "\t")  
+    
+    
+    # ---- Create input for igraph plotting of graphs -------------------------
+    # This step breaks up the trajectories into pairwise transitions and records all info for these for plotting
+    print("")
+    print("Create input for igraph plotting...")
+    
+    ## Identify first pair to initiate lists
+    mymatch <- grep("->", trajectories[,"trajectory"])[1]
+    xstrings <- unlist(strsplit(trajectories[mymatch,"trajectory"], "->")) # strings are phenotypes
+    firstpair <- paste0(xstrings[1], "->", xstrings[2])
+    
+    ## Initiate pairwise path data frame
+    pairwise_paths <- data.frame(pair = firstpair, 
+                                 node1 = xstrings[1], 
+                                 node2 = xstrings[2], 
+                                 size = 0)
+    
+    # Initialize a list of path transitions to store number of days between events observed per individual
+    daysbetween <- list()
+    
+    ## Calculate size of nodes
+    size_of_nodes <- data.frame(phenotypes = unique(tdata[,"trajectory_phenotype"]), size = 0)
+    
+    # Fill pairwise path, size of nodes and days-between for all trajectories.
+    for(i in 1:nrow(trajectories)){
+      xstrings <- unlist(strsplit(trajectories[i,"trajectory"], "->")) # strings are phenotypes
+      
+      if(length(xstrings)>1){
+        ## Get days between events for all individuals and store in the daysbetween list
+        ## (e.g for 3 strings the two columns represents the days between event a - b, b - c)
+        xvalues <- uniid[which(uniid[,"trajectory"] == trajectories[i,1]), "days"]
+        for(a in 1:(length(xstrings)-1)){
+          pathname <- paste0(xstrings[a], "->", xstrings[a+1])
+          # Append path transition to list if not in already 
+          if(!pathname %in% names(daysbetween)){ daysbetween[[pathname]] <- c(0)} # NB! This does not work if the initial vector is empty c(), I subtract the initial zero later on!
+          newnumbers <- as.numeric(sapply(strsplit(xvalues, "->"), "[", a))
+          newnumbers[is.na(newnumbers)] <- 0 
+          daysbetween[[pathname]] <- c(newnumbers, as.numeric(unlist(daysbetween[pathname])))
+        }
+        
+        matched_path <- which(size_of_nodes[,"phenotypes"] == xstrings[1])
+        size_of_nodes[matched_path, "size"] <- size_of_nodes[matched_path, "size"] + trajectories[i,"count"]
+        for(j in 2:length(xstrings)){
+          matched_path <- which(size_of_nodes[,"phenotypes"] == xstrings[j])
+          size_of_nodes[matched_path, "size"] <- size_of_nodes[matched_path, "size"] + trajectories[i,"count"]
+          
+          pair <- paste0(xstrings[j-1], "->", xstrings[j])
+          if(pair %in% pairwise_paths[,"pair"]){
+            matched_dpath <- which(pairwise_paths[,"pair"]==pair)
+            pairwise_paths[matched_dpath, "size"] <- pairwise_paths[matched_dpath, "size"] + trajectories[i,"count"]
+            
+          }else{
+            newrow <- nrow(pairwise_paths) + 1
+            pairwise_paths[newrow, "pair"] <- pair
+            pairwise_paths[newrow, "node1"] <- xstrings[j-1]
+            pairwise_paths[newrow, "node2"] <- xstrings[j]
+            pairwise_paths[newrow, "size"] <- trajectories[i,"count"]
+          }
+        }
+      }else{
+        matched_path <- which(size_of_nodes[,"phenotypes"] == xstrings)
+        size_of_nodes[matched_path, "size"] <- size_of_nodes[matched_path, "size"] + trajectories[i,"count"]
+      }
+    }
+    
+    # Add phenotype counts
+    for(i in 1:length(covid_phenos)){
+      pairwise_paths[which(pairwise_paths$node1 == covid_phenos[i] | pairwise_paths$node2 == covid_phenos[i]), covid_phenos[i]] <-
+        pairwise_paths[which(pairwise_paths$node1 == covid_phenos[i] | pairwise_paths$node2 == covid_phenos[i]),"size"]
+    }
+    
+    # Add days between
+    for(i in 1:nrow(pairwise_paths)){
+      pathname <- pairwise_paths[i,1]
+      # Last number should always be 0 as that is how the list of days between numbers got initiated
+      all_day_measures <- daysbetween[[pathname]]
+      if(tail(all_day_measures, 1) != 0){stop("Something has gone wrong with the days between calculations - last number not 0!")}
+      all_day_measures <- all_day_measures[1:(length(all_day_measures)-1)] # Remove that inital 0 which was used to start the list!
+      pairwise_paths[i,"n_day_measures"] <- length(daysbetween[[pathname]])
+      pairwise_paths[i,"median_days"] <-  median(daysbetween[[pathname]])
+      pairwise_paths[i,"mean_days"] <- mean(daysbetween[[pathname]]) 
+    }
+    
+    ## Write out paths and node sizes
+    print("")
+    print(paste0("Pair wise paths writen to: ", filename_paths))
+    print(paste0("Sizes of nodes writen to: ", filename_nodes))
+    write.table(pairwise_paths, filename_paths, sep = "\t", quote = F, row.names = F)
+    write.table(size_of_nodes, filename_nodes, sep = "\t", quote = F, row.names = F)
+    
   }else{
     pairwise_paths <- read.table(filename_paths, header = T, sep = "\t")
     size_of_nodes <- read.table(filename_nodes, header = T, sep = "\t")
@@ -250,7 +252,7 @@ create_trajectory_plot <- function(uniid, tdata, folder_path, basefilename, pref
   if(grepl("wave2", prefix_file_name)){
     E(net)$median_days[as_edgelist(net)[,1]=="Unaffected"] <- E(net)$median_days[as_edgelist(net)[,1]=="Unaffected"] - 251
   }
-
+  
   ## Fix layout
   l <- suppressWarnings(layout.reingold.tilford(net))
   graph_layout <- graph_layout[order(match(graph_layout$phenotype, names(V(net)))),]
