@@ -10,19 +10,19 @@ library(magrittr)
 folder_path <- "~/dars_nic_391419_j3w9t_collab/CCU013/output/km_plots"
 basefilename <- "CCU013_km_"
 
-mycolors <- c("#74c476", "#006d2c", "#fe9929", "#ff6800", "#ff003e") # Positive test, GP diagnosis, Hospitalisation, ICU admission, Critical care outside ICU
+mycolors <- c("#74c476", "#006d2c", "#fe9929", "#ff6800", "#ff003e") # Positive test, GP diagnosis, Hospitalisation, ICU admission, Ventilatory support outside ICU
 
 # Main data
 ## Generated in Data bricks; Notebook CCU013_17_paper_survival_cohort
 ## Cohort data is used for stratifying on demographics; gender, age, ethnicity & IMD
 cohort <- dbGetQuery(con, "SELECT person_id_deid, date_first, death, severity, death_fu_time FROM dars_nic_391419_j3w9t_collab.ccu013_covid_trajectory_paper_cohort_survival")
-nrow(cohort) # 3469528
+nrow(cohort) # 7244925
 
 ## Wave population are used to generate wave comparison plots
 wave1 <- dbGetQuery(con, "SELECT person_id_deid, date_first, death, severity, death_fu_time FROM dars_nic_391419_j3w9t_collab.ccu013_covid_trajectory_paper_cohort_survival_wave1")
 wave2 <- dbGetQuery(con, "SELECT person_id_deid, date_first, death, severity, death_fu_time FROM dars_nic_391419_j3w9t_collab.ccu013_covid_trajectory_paper_cohort_survival_wave2")
-nrow(wave1) # 263839
-nrow(wave2) # 2878573 
+nrow(wave1) # 264505
+nrow(wave2) # 2889028 
 wave1[,"wave"] <- 1
 wave2[,"wave"] <- 2
 waves <- rbind(wave1, wave2)
@@ -30,9 +30,9 @@ waves <- as.data.frame(waves)
 
 # Additional data
 demo <- dbGetQuery(con, "SELECT * FROM dars_nic_391419_j3w9t_collab.ccu013_covid_events_demographics_paper_cohort")
-nrow(demo)   # 3469528
+nrow(demo)   # 7244925
 vax <- dbGetQuery(con, "SELECT * FROM dars_nic_391419_j3w9t_collab.ccu013_no_covid_before_wave2_vax_status WHERE date is NOT NULL")
-nrow(vax)    # 2957762
+nrow(vax)    # 6731281
 
 # Data prep 
 #----------------------------------------------------------------------------------------------------------------------
@@ -65,18 +65,18 @@ table(cohort$severity)
 cohort[which(cohort[, "severity"] == "0_positive"), "severity"] <- "Positive test"
 cohort[which(cohort[, "severity"] == "1_gp"), "severity"] <- "Primary care diagnosis"
 cohort[which(cohort[, "severity"] == "2_hospitalised"), "severity"] <- "Hospitalisation"
-cohort[which(cohort[, "severity"] == "03_critical_care_outside_ICU"), "severity"] <- "Critical care outside ICU"
+cohort[which(cohort[, "severity"] == "3_ventilatory_support_outside_ICU"), "severity"] <- "Ventilatory support outside ICU"
 cohort[which(cohort[, "severity"] == "4_icu_admission"), "severity"] <- "ICU admission"
-cohort$severity <- factor(cohort$severity, levels = c("Positive test", "Primary care diagnosis", "Hospitalisation", "ICU admission", "Critical care outside ICU"))
+cohort$severity <- factor(cohort$severity, levels = c("Positive test", "Primary care diagnosis", "Hospitalisation", "ICU admission", "Ventilatory support outside ICU"))
 table(cohort$severity)
 
 # Rename severity
 waves[which(waves[, "severity"] == "0_positive"), "severity"] <- "Positive test"
 waves[which(waves[, "severity"] == "1_gp"), "severity"] <- "Primary care diagnosis"
 waves[which(waves[, "severity"] == "2_hospitalised"), "severity"] <- "Hospitalisation"
-waves[which(waves[, "severity"] == "03_critical_care_outside_ICU"), "severity"] <- "Critical care outside ICU"
+waves[which(waves[, "severity"] == "3_ventilatory_support_outside_ICU"), "severity"] <- "Ventilatory support outside ICU"
 waves[which(waves[, "severity"] == "4_icu_admission"), "severity"] <- "ICU admission"
-waves$severity <- factor(waves$severity, levels = c("Positive test", "Primary care diagnosis", "Hospitalisation", "ICU admission", "Critical care outside ICU"))
+waves$severity <- factor(waves$severity, levels = c("Positive test", "Primary care diagnosis", "Hospitalisation", "ICU admission", "Ventilatory support outside ICU"))
 table(waves$severity)
 
 
@@ -111,7 +111,7 @@ f1 <- survfit(Surv(death_fu_time, death) ~ severity,
              pval.coord = c(3, 0.35),
              break.time.by = 7,
              legend.title = "",
-             legend.labs = c("Positive test", "Primary care diagnosis", "Hospitalisation", "ICU admission", "Critical care outside ICU"),
+             legend.labs = c("Positive test", "Primary care diagnosis", "Hospitalisation", "ICU admission", "Ventilatory support outside ICU"),
              font.y = 8,
              fontsize = 4,
              title = 'COVID-19 Mortality - Stratified by worst healthcare presentation',
@@ -134,7 +134,7 @@ f2 <- survfit(Surv(death_fu_time, death) ~ severity,
              pval.coord = c(3, 0.35),
              break.time.by = 7,
              legend.title = "",
-             legend.labs = c("Positive test", "Primary care diagnosis", "Hospitalisation", "ICU admission", "Critical care outside ICU"),
+             legend.labs = c("Positive test", "Primary care diagnosis", "Hospitalisation", "ICU admission", "Ventilatory support outside ICU"),
              font.y = 8,
              fontsize = 4,
              title = 'COVID-19 Mortality - Stratified by worst healthcare presentation',

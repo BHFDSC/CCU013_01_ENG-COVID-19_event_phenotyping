@@ -6,13 +6,13 @@
 library(igraph)
 library(scales)
 library(dplyr)
-source("~/dars_nic_391419_j3w9t_collab/CCU013/CCU013_colorscheme.R")
-source("~/dars_nic_391419_j3w9t_collab/CCU013/trejectory_plot_function.R")
+source("CCU013_colorscheme.R")
+source("trejectory_plot_function.R")
 
 folder_path <- "~/dars_nic_391419_j3w9t_collab/CCU013/output/trajectories/"
 basefilename <- "CCU013_trajectories_ICU"
 
-N_total_pop <- 56609049
+N_total_pop <- 57032174
 
 # X and Y coordinates for phenotype node location on plot - note values are relative to each other, i.e. coordinate are not used as absolute values!
 graph_layout <- data.frame(phenotype = c("Unaffected","Positive test", "Primary care diagnosis", "Hospitalisation", "ICU admission", "Death"),
@@ -29,7 +29,14 @@ wave_2_end = "2021-02-12"
 demo <- dbGetQuery(con, "SELECT a.person_id_deid, a.sex, a.ethnic_group, 2021 - left(a.dob,4) as age, a.IMD_quintile FROM dars_nic_391419_j3w9t_collab.ccu013_master_demographics a 
 INNER JOIN (SELECT NHS_NUMBER_DEID FROM dars_nic_391419_j3w9t_collab.ccu013_dp_skinny_patient_23_01_2020) b
 ON a.person_id_deid = b.NHS_NUMBER_DEID")
-nrow(demo)  # 56609049
+nrow(demo)  # 57032174
+
+age <- dbGetQuery(con, "SELECT
+                      person_id_deid, age
+                    FROM 
+                      dars_nic_391419_j3w9t_collab.ccu013_paper_table_one_56million_denominator")
+                  
+
 
 
 #-- Find trajectories for ALL individuals
@@ -41,7 +48,7 @@ if(alreadycalculated){
   uniid <- read.table(paste0(folder_path, basefilename, "_individual_trajectories.txt"), header =T, sep = "\t")
   if("covid_severity" %in% names(uniid)){uniid$covid_severity <- NULL }
 }else{
-  # Note that the data has already been correctly ordered by person_id_deid, date and the specified order of phenotypes in the notebook. 
+  # Note that the data has already been correctly ordered by person_id_deid, date and the specified order of phenotypes in the notebook CCU013_13_paper_subset_data_to_cohort. 
   # Note we are only selecting the samples who actually have events, the rest can be added afterwards!
   tdata <- dbGetQuery(con, "SELECT a.person_id_deid, a.date, a.trajectory_phenotype, a.phenotype_order, a.days_passed 
 FROM dars_nic_391419_j3w9t_collab.ccu013_covid_trajectory_graph_data_icu as a
@@ -82,7 +89,7 @@ create_trajectory_plot(uniid,
 #--- WAVE 1 -----------------------------------------------------------------------------------------
 ## Load the wave1 subset produced in notebook: CCU013_13_paper_subset_data_to_cohort
 ### Only include people who where effected
-alreadycalculated_wave1 <- F
+alreadycalculated_wave1 <- T
 if(alreadycalculated_wave1){
   uniid_wave1 <- read.table(paste0(folder_path, basefilename, "_individual_trajectories_wave1.txt"), header =T, sep = "\t")
   if("covid_severity" %in% names(uniid_wave1)){uniid_wave1$covid_severity <- NULL }
@@ -123,7 +130,7 @@ create_trajectory_plot(uniid_wave1, tdata_wave1,
 #--- WAVE 2 -----------------------------------------------------------------------------------------
 
 ## Load the wave1 subset produced in notebook: CCU013_13_paper_subset_data_to_cohort
-alreadycalculated_wave2 <- F
+alreadycalculated_wave2 <- T
 if(alreadycalculated_wave2){
   uniid_wave2 <- read.table(paste0(folder_path, basefilename, "_individual_trajectories_wave2.txt"), header =T, sep = "\t")
   if("covid_severity" %in% names(uniid_wave2)){uniid_wave2$covid_severity <- NULL }
@@ -160,7 +167,7 @@ create_trajectory_plot(uniid_wave2, tdata_wave2,
                        graph_layout, 
                        plot_days = T,
                        N_total_pop,
-                       pre_processing_done = F, # If this function has been run once set this to True to speed up
+                       pre_processing_done = T, # If this function has been run once set this to True to speed up
                        threshold = 0.0001,
                        n_unaffected)
 
@@ -182,7 +189,7 @@ create_trajectory_plot(uniid_wave2_vax, tdata_wave2_vax,
                        graph_layout, 
                        plot_days = T,
                        N_total_pop,
-                       pre_processing_done = F, # If this function has been run once set this to True to speed up
+                       pre_processing_done = T, # If this function has been run once set this to True to speed up
                        threshold = 0.00001,
                        n_unaffected)
 
@@ -205,14 +212,14 @@ create_trajectory_plot(uniid_wave2_unvax, tdata_wave2_unvax,
                        graph_layout, 
                        plot_days = T,
                        N_total_pop,
-                       pre_processing_done = F, # If this function has been run once set this to True to speed up
+                       pre_processing_done = T, # If this function has been run once set this to True to speed up
                        threshold = 0.0001,
                        n_unaffected)
 
 #-- Male -----------------------------------------------------------
 tdata_sub <- tdata[which(tdata[,"person_id_deid"] %in% demo[which(demo$sex ==1), "person_id_deid"]),]
 uniid_sub <- uniid[which(uniid[,"person_id_deid"] %in% tdata_sub[,"person_id_deid"]), ]
-length(unique(tdata_sub$person_id_deid)) # 28031138
+length(unique(tdata_sub$person_id_deid)) # 28279784
 
 n_unaffected <- sum(is.na(uniid_sub$days))
 create_trajectory_plot(uniid_sub, tdata_sub, folder_path, basefilename, 
@@ -221,14 +228,14 @@ create_trajectory_plot(uniid_sub, tdata_sub, folder_path, basefilename,
                        graph_layout, 
                        plot_days = T,
                        N_total_pop,
-                       pre_processing_done = F, # If this function has been run once set this to True to speed up
+                       pre_processing_done = T, # If this function has been run once set this to True to speed up
                        threshold = 0.0001,
                        n_unaffected)
 
 #-- Female ---------------------------------------------------------
 tdata_sub <- tdata[which(tdata[,"person_id_deid"] %in% demo[which(demo$sex ==2), "person_id_deid"]),]
 uniid_sub <- uniid[which(uniid[,"person_id_deid"] %in% tdata_sub[,"person_id_deid"]), ]
-length(unique(tdata_sub$person_id_deid)) # 28576785
+length(unique(tdata_sub$person_id_deid)) # 28752327
 
 n_unaffected <- sum(is.na(uniid_sub$days))
 create_trajectory_plot(uniid_sub, tdata_sub, folder_path, basefilename, 
@@ -237,14 +244,15 @@ create_trajectory_plot(uniid_sub, tdata_sub, folder_path, basefilename,
                        graph_layout, 
                        plot_days = T,
                        N_total_pop,
-                       pre_processing_done = F, # If this function has been run once set this to True to speed up
+                       pre_processing_done = T, # If this function has been run once set this to True to speed up
                        threshold = 0.0001,
                        n_unaffected)
 
 #-- Age under 18th -------------------------------------------------
-tdata_sub <- tdata[which(tdata[,"person_id_deid"] %in% demo[which(demo$age<18), "person_id_deid"]),]
+tdata_sub <- tdata[which(tdata[,"person_id_deid"] %in% age[which(age$age<18), "person_id_deid"]),]
+#tdata_sub <- tdata[which(tdata[,"person_id_deid"] %in% demo[which(demo$age<18), "person_id_deid"]),]
 uniid_sub <- uniid[which(uniid[,"person_id_deid"] %in% tdata_sub[,"person_id_deid"]), ]
-length(unique(tdata_sub$person_id_deid)) # 10431616
+length(unique(tdata_sub$person_id_deid)) # 11612932
 
 n_unaffected <- sum(is.na(uniid_sub$days))
 create_trajectory_plot(uniid_sub, tdata_sub, folder_path, basefilename, 
@@ -258,7 +266,8 @@ create_trajectory_plot(uniid_sub, tdata_sub, folder_path, basefilename,
                        n_unaffected)
 
 #-- Age 18-29 ------------------------------------------------------
-tdata_sub <- tdata[which(tdata[,"person_id_deid"] %in% demo[which(demo$age>=18 & demo$age <=29), "person_id_deid"]),]
+tdata_sub <- tdata[which(tdata[,"person_id_deid"] %in% age[which(age$age>=18 & age$age <=29), "person_id_deid"]),]
+#tdata_sub <- tdata[which(tdata[,"person_id_deid"] %in% demo[which(demo$age>=18 & demo$age <=29), "person_id_deid"]),]
 uniid_sub <- uniid[which(uniid[,"person_id_deid"] %in% tdata_sub[,"person_id_deid"]), ]
 length(unique(tdata_sub$person_id_deid)) # 8199384
 
@@ -274,7 +283,8 @@ create_trajectory_plot(uniid_sub, tdata_sub, folder_path, basefilename,
                        n_unaffected)
 
 #-- Age 30-49 ------------------------------------------------------
-tdata_sub <- tdata[which(tdata[,"person_id_deid"] %in% demo[which(demo$age>=30 & demo$age <=49), "person_id_deid"]),]
+tdata_sub <- tdata[which(tdata[,"person_id_deid"] %in% age[which(age$age>=30 & age$age <=49), "person_id_deid"]),]
+#tdata_sub <- tdata[which(tdata[,"person_id_deid"] %in% demo[which(demo$age>=30 & demo$age <=49), "person_id_deid"]),]
 uniid_sub <- uniid[which(uniid[,"person_id_deid"] %in% tdata_sub[,"person_id_deid"]), ]
 length(unique(tdata_sub$person_id_deid)) # 15665505
 
@@ -289,7 +299,8 @@ create_trajectory_plot(uniid_sub, tdata_sub, folder_path, basefilename,
                        threshold = 0.0001,
                        n_unaffected)
 #-- Age 50-69 ------------------------------------------------------
-tdata_sub <- tdata[which(tdata[,"person_id_deid"] %in% demo[which(demo$age>=50 & demo$age <=69), "person_id_deid"]),]
+tdata_sub <- tdata[which(tdata[,"person_id_deid"] %in% age[which(age$age>=50 & age$age <=69), "person_id_deid"]),]
+#tdata_sub <- tdata[which(tdata[,"person_id_deid"] %in% demo[which(demo$age>=50 & demo$age <=69), "person_id_deid"]),]
 uniid_sub <- uniid[which(uniid[,"person_id_deid"] %in% tdata_sub[,"person_id_deid"]), ]
 length(unique(tdata_sub$person_id_deid)) # 13987885
 
@@ -306,7 +317,8 @@ create_trajectory_plot(uniid_sub, tdata_sub, folder_path, basefilename,
 
 
 #-- Age Over 70 ----------------------------------------------------
-tdata_sub <- tdata[which(tdata[,"person_id_deid"] %in% demo[which(demo$age>=70), "person_id_deid"]),]
+tdata_sub <- tdata[which(tdata[,"person_id_deid"] %in% age[which(age$age>=70), "person_id_deid"]),]
+#tdata_sub <- tdata[which(tdata[,"person_id_deid"] %in% demo[which(demo$age>=70), "person_id_deid"]),]
 uniid_sub <- uniid[which(uniid[,"person_id_deid"] %in% tdata_sub[,"person_id_deid"]), ]
 length(unique(tdata_sub$person_id_deid)) # 8324658
 
@@ -333,7 +345,7 @@ create_trajectory_plot(uniid_sub, tdata_sub, folder_path, basefilename,
                        graph_layout, 
                        plot_days = T,
                        N_total_pop,
-                       pre_processing_done = F, # If this function has been run once set this to True to speed up
+                       pre_processing_done = T, # If this function has been run once set this to True to speed up
                        threshold = 0.0001,
                        n_unaffected)
 
@@ -349,7 +361,7 @@ create_trajectory_plot(uniid_sub, tdata_sub, folder_path, basefilename,
                        graph_layout, 
                        plot_days = T,
                        N_total_pop,
-                       pre_processing_done = F, # If this function has been run once set this to True to speed up
+                       pre_processing_done = T, # If this function has been run once set this to True to speed up
                        threshold = 0.0001,
                        n_unaffected)
 
@@ -365,7 +377,7 @@ create_trajectory_plot(uniid_sub, tdata_sub, folder_path, basefilename,
                        graph_layout, 
                        plot_days = T,
                        N_total_pop,
-                       pre_processing_done = F, # If this function has been run once set this to True to speed up
+                       pre_processing_done = T, # If this function has been run once set this to True to speed up
                        threshold = 0.0001,
                        n_unaffected)
 
@@ -381,7 +393,7 @@ create_trajectory_plot(uniid_sub, tdata_sub, folder_path, basefilename,
                        graph_layout, 
                        plot_days = T,
                        N_total_pop,
-                       pre_processing_done = F, # If this function has been run once set this to True to speed up
+                       pre_processing_done = T, # If this function has been run once set this to True to speed up
                        threshold = 0.0001,
                        n_unaffected)
 
@@ -397,7 +409,7 @@ create_trajectory_plot(uniid_sub, tdata_sub, folder_path, basefilename,
                        graph_layout, 
                        plot_days = T,
                        N_total_pop,
-                       pre_processing_done = F, # If this function has been run once set this to True to speed up
+                       pre_processing_done = T, # If this function has been run once set this to True to speed up
                        threshold = 0.0001,
                        n_unaffected)
 
@@ -413,7 +425,7 @@ create_trajectory_plot(uniid_sub, tdata_sub, folder_path, basefilename,
                        graph_layout, 
                        plot_days = T,
                        N_total_pop,
-                       pre_processing_done = F, # If this function has been run once set this to True to speed up
+                       pre_processing_done = T, # If this function has been run once set this to True to speed up
                        threshold = 0.0001,
                        n_unaffected)
 
@@ -429,7 +441,7 @@ create_trajectory_plot(uniid_sub, tdata_sub, folder_path, basefilename,
                        graph_layout, 
                        plot_days = T,
                        N_total_pop,
-                       pre_processing_done = F, # If this function has been run once set this to True to speed up
+                       pre_processing_done = T, # If this function has been run once set this to True to speed up
                        threshold = 0.0001,
                        n_unaffected)
 
@@ -445,7 +457,7 @@ create_trajectory_plot(uniid_sub, tdata_sub, folder_path, basefilename,
                        graph_layout, 
                        plot_days = T,
                        N_total_pop,
-                       pre_processing_done = F, # If this function has been run once set this to True to speed up
+                       pre_processing_done = T, # If this function has been run once set this to True to speed up
                        threshold = 0.0001,
                        n_unaffected)
 

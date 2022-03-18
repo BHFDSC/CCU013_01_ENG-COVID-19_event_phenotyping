@@ -6,7 +6,7 @@ library(survminer)
 folder_path <- "~/dars_nic_391419_j3w9t_collab/CCU013/output/km_plots"
 basefilename <- "CCU013_km_"
 
-source("~/dars_nic_391419_j3w9t_collab/CCU013/matching_function.R")
+source("~/dars_nic_391419_j3w9t_collab/CCU013/04_analysis_R-GITHUB-v3/matching_function.R")
 
 # Note this is exact matching, samples that cant be matched exactly are not included in the further analysis.
 
@@ -14,7 +14,7 @@ source("~/dars_nic_391419_j3w9t_collab/CCU013/matching_function.R")
 ## -------------------------------------------
 d <- dbGetQuery(con, "SELECT * FROM dars_nic_391419_j3w9t_collab.ccu013_no_covid_before_feb_2021_vax_status_matching")
 
-nrow(d) # 49,929,434
+nrow(d) # 50357509 @230122 | old:49,929,434
 
 case <- d[which(d$vaccine_status == "Vaccinated"), ]
 ctrl <- d[which(d$vaccine_status == "Unvaccinated"), ]
@@ -24,7 +24,7 @@ m <- rbind(case,ctrl)
 m <- data.table(m)
 m <- m[-which(m$SEX %in% c(0,9)), ]
 nrow(m) # 49928374
-table(m$vaccinated) # Unvax = 49,506,564, Vax = 421,810
+table(m$vaccinated) # Unvax = 49,932,299 Vax = 425,148 @230122 |OLD: Unvax = 49,506,564, Vax = 421,810
 
 m$mvar <- do.call('paste0', m[,c("SEX","ethnicity","age_grp")])
 #m$mvar <- do.call('paste0', m[,c("age_grp")])
@@ -32,7 +32,7 @@ matched_m <- smatch(m, treat = "vaccinated", mvar = 'mvar', ratio = 1, seed = 42
 matched_summary <- dcast(matched_m, SEX + ethnicity + age_grp ~vaccinated, value.var = 'id', fun.aggregate = length)
 print(paste0(max(matched_m$id), " out of ", nrow(case), " samples was matached exactly!"))
 
-## For dosage 2: "421809 out of 421811 samples was matached exactly!"
+## For dosage 2: @230222 - "425147 out of 425148 samples was matached exactly!" | OLD: "421809 out of 421811 samples was matached exactly!"
 
 # write out matching results
 matched_m <- matched_m[order(matched_m$id), ]
@@ -57,7 +57,7 @@ table(unmatched[,".mvar"])
 #-----------------------------------------------------------------------------------------------------------------------
 ## NOTE!! our date of interest is: end_date
 start_date <- as.Date("2021-02-01")
-end_date <- as.Date("2021-05-31")
+end_date <- as.Date("2021-11-30") # as.Date("2021-05-31")
 traject <- dbGetQuery(con, paste0("SELECT a.person_id_deid, date, covid_phenotype, death_date 
                                   FROM (SELECT person_id_deid, date, covid_phenotype FROM
                                   dars_nic_391419_j3w9t_collab.ccu013_covid_trajectory_paper_cohort 

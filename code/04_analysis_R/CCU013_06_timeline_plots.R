@@ -1,17 +1,17 @@
 ## R script to create time line histogram/density of COVID-19 events
 #    - Plots used as figures in the COVID-Phenotype severity paper
 # Authors: Johan Hilge Thygesen & Chris Tomlinson
-# Last updated: 03.09.21
+# Last updated: 23.01.22
 
 library("ggplot2")
 library("stringr")
-source("~/dars_nic_391419_j3w9t_collab/CCU013/CCU013_colorscheme.R")
+source("~/dars_nic_391419_j3w9t_collab/CCU013/04_analysis_R-GITHUB-v3/CCU013_colorscheme.R")
 
 
 # Config ------------------------------------------------------------------
 
 start_date = '2020-01-23'
-end_date = '2021-05-31'
+end_date = '2021-11-30'
 traject <- dbGetQuery(con, "SELECT * FROM dars_nic_391419_j3w9t_collab.ccu013_covid_trajectory_paper_cohort")
 
 # Pre-processing ----------------------------------------------------------
@@ -69,6 +69,7 @@ mycolors2 <- c("#74c476",
 p3 <- ggplot(tdate, aes(x = date, fill = covid_phenotype)) + geom_density(aes(y = ..count..), alpha = 0.75) + xlab("") + ylab("") + 
   facet_grid(rows = vars(covid_phenotype), scales = "free") + scale_fill_manual(values = mycolors2) + 
   theme_bw() +  scale_x_date(date_breaks = "2 month", date_labels = "%b %Y") + 
+  coord_cartesian(xlim = c(as.Date("2020-02-23"), as.Date("2021-09-25"))) + 
   theme(axis.text.x = element_text(angle = 45, vjust = 0.5, hjust = 0.5), 
         strip.text = element_text(size = 5), legend.position = "None") +
   # Lockdown and wave definitions
@@ -104,6 +105,7 @@ mycolors3 <- c("#74c476",
 p4 <- ggplot(sdate, aes(x = date, fill = source)) + geom_density(aes(y = ..count..), alpha = 0.75) + xlab("") + ylab("") + 
   facet_grid(rows = vars(source), scales = "free") +  theme_bw() +  scale_x_date(date_breaks = "2 month", date_labels = "%b %Y") + 
   scale_fill_manual(values = mycolors3) + 
+  coord_cartesian(xlim = c(as.Date("2020-02-23"), as.Date("2021-09-25"))) + 
   theme(axis.text.x = element_text(angle = 45, vjust = 0.5, hjust = 0.5), 
         strip.text = element_text(size = 6), legend.position = "None")+
   # Lockdown and wave definitions

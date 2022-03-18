@@ -2,7 +2,7 @@
 # Tables checked: ccu013_covid_severity OR ccu013_covid_severity_paper_cohort
 #                 ccu013_covid_trajectory OR ccu013_covid_trajectory_paper_cohort
 # Author: Johan Hilge Thygesen
-# Last updated: 16.06.21
+# Last updated: 22.01.22
 
 
 # ---- Load tables ------------------
@@ -20,14 +20,19 @@ deaths <- dbGetQuery(con, "SELECT * FROM dars_nic_391419_j3w9t_collab.ccu003_dir
 
 start_date = '2020-01-01' # None paper cohort
 start_date = '2020-01-23'
-end_date = '2021-07-29'
+end_date = '2021-11-30'
 
 
 # ----- Start checks
 
-nrow(severity) # 3469528 - for paper_cohort 
-nrow(traject) # 8825738 - for paper_cohort 
-nrow(unique(traject)) # 8825738 - for paper_cohort 
+# Old Medxriv paper cohort number
+# severity: 3469528 
+# trajectory: 8825738
+# unique(trajectory): 8825738
+
+nrow(severity) # Cohort 7,244,925 |8,714,594 Full Sample
+nrow(traject) # Cohort 13,990,425 | 15,825,444 Full Sample
+nrow(unique(traject)) # Cohort 13,990,425 | 15825444 Full Sample  
 
 ## 1) Check that all samples have identifies
 all(!is.na(severity[,1]))
@@ -74,6 +79,9 @@ if(any(traject[,'date']>as.Date(end_date, format = "%Y-%m-%d"), na.rm = T)){stop
 head(traject[which(traject[,'date']<as.Date(start_date, format = "%Y-%m-%d")),])
 table(traject[which(traject[,'date']<as.Date(start_date, format = "%Y-%m-%d")),"source"])
 nrow(traject[which(traject[,'date']<as.Date(start_date, format = "%Y-%m-%d")),])
+head(severity[which(severity[,'date']<as.Date(start_date, format = "%Y-%m-%d")),])
+nrow(severity[which(severity[,'date']<as.Date(start_date, format = "%Y-%m-%d")),])
+
 
 ## 5) Check for overlap between death with and without diagnosis
 withDiag <- unique(traject[which(traject[,"covid_phenotype"] == '04_Fatal_with_covid_diagnosis'), "person_id_deid"])
@@ -100,32 +108,32 @@ for(i in 1:length(icdcols)){
     paste0("Deaths from covid found in patients wihout covid on certificate, death col:", icdcols[i]))}
 }
 head(icdcols)
-#head(deaths)
-#deaths[which(deaths[,"person_id_deid"]=="3DQOF5766RUCLZA"),]
-#traject[which(traject[,1]=="07O8FWQ7ZTV038C"),]
 
-# ## Multiple death dates
-# test <- traject[which(traject$covid_phenotype %in% c("04_Fatal_with_covid_diagnosis","04_Fatal_without_covid_diagnosis")),]
-# test2 <- as.data.frame(table(test[,1]))
-# test2 <- test2[which(test2[,2]>1),]
-# test2 <- test2[order(test2[,2], decreasing = T),]
-# nrow(test2)
-# head(test2)
-# table(test2[,2])
-# test[which(test[,1]== "001WF09LDQHE1X3"),]
-# test[which(test[,1]== "05LTERN3NH4C7P5"),]
-# traject[which(traject[,1]== "05LTERN3NH4C7P5"),]
-# 
-# 
-# # Number of events per id
-# test <- unique(traject[,c("person_id_deid", "covid_phenotype")])
-# table(test$covid_phenotype)
-# 
-# # Number of confirmed cases
-# length(unique(traject[which(traject$covid_status == "confirmed"),"person_id_deid"]))
-# 
-# # Number of positive tests
-# length(unique(traject[which(traject$covid_phenotype == "01_Covid_positive"),"person_id_deid"]))
+################################
+### Additional checks for the PAPER_COHORT ONLY
 
+### 8) Check that everyone with less than 28 days followup time dies! - otherwise the followup time is not working
+
+## Find all ids who have less than 28 days followup time
+myquery <- paste0("select distinct t.person_id_deid, first_event, date, covid_phenotype FROM (
+  Select person_id_deid, first_event FROM 
+  (SELECT person_id_deid, min(date) as first_event FROM dars_nic_391419_j3w9t_collab.ccu013_covid_trajectory_paper_cohort
+    group by person_id_deid)
+    WHERE first_event > \"", as.character(as.Date(end_date) - 28) ,"\") as f
+   INNER JOIN dars_nic_391419_j3w9t_collab.ccu013_covid_trajectory_paper_cohort as t
+   ON f.person_id_deid == t.person_id_deid
+   order by t.person_id_deid")
+first_event <- dbGetQuery(con, myquery)
+
+## How many with 28 days followup time?
+length(unique(first_event$person_id_deid))
+
+## How many of these die die
+first_event_death <- first_event[which(strtrim(first_event$covid_phenotype,2) == "04"),]
+table(first_event_death$covid_phenotype)
+length(unique(first_event_death$person_id_deid))
+
+## All okay
+length(unique(first_event$person_id_deid))==length(unique(first_event_death$person_id_deid))
 
 
