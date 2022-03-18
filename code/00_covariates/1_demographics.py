@@ -23,14 +23,15 @@
 # MAGIC  
 # MAGIC **Reviewer(s)** 
 # MAGIC  
-# MAGIC **Date last updated** 2021-10-06
+# MAGIC **Date last updated** 2022-01-22
 # MAGIC  
 # MAGIC **Date last reviewed** *NA*
 # MAGIC  
-# MAGIC **Date last run** 2021-10-06
+# MAGIC **Date last run** 2022-01-22
 # MAGIC 
 # MAGIC **Changelog**   
 # MAGIC * **2021-10-06**: Reverted from `curr302_patient_skinny_record` to `curr302_patient_skinny_record_archive WHERE ProductionDate = "2021-07-29 13:39:04.161949"` due to ten-fold higher unknown ethnicity issues
+# MAGIC * **2022-01-22** Updated 2022-01-22 for revised manuscript to use latest ProductionDate `2022-01-20 14:58:52.353312`
 # MAGIC  
 # MAGIC **Data input**   
 # MAGIC * **Key demographics: `dars_nic_391419_j3w9t_collab.curr302_patient_skinny_record` **
@@ -58,7 +59,7 @@
 # COMMAND ----------
 
 # Params
-production_date = "2021-07-29 13:39:04.161949"
+production_date = "2022-01-20 14:58:52.353312" # Notebook CCU03_01_create_table_aliases   Cell 8
 
 # Table names
 skinny_record = "dars_nic_391419_j3w9t_collab.curr302_patient_skinny_record_archive"
@@ -348,11 +349,6 @@ spark.sql(f"OPTIMIZE dars_nic_391419_j3w9t_collab.{output} ZORDER BY person_id_d
 
 # COMMAND ----------
 
-# was 74610355    74610355 prior to implementing the denominator
-# Now 56.6 million, as per our denominator
-
-# COMMAND ----------
-
 display(
   spark.sql(f"""
   SELECT COUNT(*), COUNT(DISTINCT person_id_deid) FROM dars_nic_391419_j3w9t_collab.{output}
@@ -376,9 +372,15 @@ display(
 # MAGIC     * SELECT COUNT(distinct person_id_deid) FROM dars_nic_391419_j3w9t_collab.ccu013_master_demographics WHERE ethnicity='Unknown' = 25,935,198
 # MAGIC   * Using `dars_nic_391419_j3w9t_collab.curr302_patient_skinny_record_archive WHERE ProductionDate = "2021-07-29 13:39:04.161949"`  
 # MAGIC     * = 21,070,900
+# MAGIC * Note that this is on the denominator of ~109 Million, i.e. includes records that don't meet minimum data quality and are filtered out in cohort process. Maximally comprehensive to allow for other studies using different cohort definitions.
 
 # COMMAND ----------
 
 # MAGIC %sql
 # MAGIC SELECT COUNT(distinct person_id_deid) FROM dars_nic_391419_j3w9t_collab.ccu013_master_demographics
 # MAGIC WHERE ethnicity='Unknown'
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC SELECT COUNT(*) FROM dars_nic_391419_j3w9t_collab.ccu013_master_demographics
