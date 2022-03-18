@@ -40,6 +40,17 @@ Johan H Thygesen, Christopher R Tomlinson, Sam Hollings, Mehrdad A Mizani, Alex 
 
 ---
 
+Figure 1 below show how these phenotypes and datasets were used in our manuscript.
+
+<image src="fig1.png"
+    align="center"
+	alt="Flow diagram showing which datasets was used to identify which COVID-19 phenotypes. Also avaiable as figure 1 in our manuscript. "
+    >  
+<br>
+<br>
+
+
+
 # Other phenotypes used within this work  
 
 1. `long-COVID` based on an aggregation across the following three [OpenSAFELY codelists](https://www.opencodelists.org/) these are best accessed on the [OpenSAFELY website](https://www.opencodelists.org/) however codelists and version ids used are committed to this repository for posterity:
