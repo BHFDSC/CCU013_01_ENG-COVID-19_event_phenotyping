@@ -8,8 +8,8 @@ from pyspark.sql import functions as f
 from datetime import datetime
 from pyspark.sql.types import DateType
 
-start_date = '2020-01-01'
-end_date = '2021-07-29' # The maximal date covered by all sources.
+start_date = '2020-01-23'
+end_date = '2021-11-30' # The maximal date covered by all sources.
 # NB common cut-off data across all data sources is implemented in CCU013_13_paper_subset_data_to_cohort
 
 # COMMAND ----------
@@ -114,6 +114,7 @@ events = date_first \
 
 # MAGIC %md
 # MAGIC ## 2. Add mutex severity phenotype
+# MAGIC * `03_critical_care_outside_ICU` -> `3_ventilatory_support_outside_ICU`
 
 # COMMAND ----------
 
@@ -129,7 +130,7 @@ SELECT
     (03_ECMO_treatment = 1
     OR 03_IMV_treatment = 1
     OR 03_NIV_treatment = 1)
-    THEN '03_critical_care_outside_ICU' 
+    THEN '3_ventilatory_support_outside_ICU' 
   WHEN
     02_Covid_admission = 1
     THEN '2_hospitalised'
@@ -259,6 +260,7 @@ create_table("ccu013_covid_trajectory_paper_cohort_wave1")
 # COMMAND ----------
 
 # MAGIC %sql
+# MAGIC -- min date(2020-02-20), max date(2020-06-26), min followup_end(2020-05-29), max followup_end(2020-06-26)
 # MAGIC SELECT min(date), max(date), min(followup_end), max(followup_end)  FROM global_temp.ccu013_covid_trajectory_paper_cohort_wave1
 
 # COMMAND ----------
@@ -351,7 +353,7 @@ SELECT
     (03_ECMO_treatment = 1
     OR 03_IMV_treatment = 1
     OR 03_NIV_treatment = 1)
-    THEN '03_critical_care_outside_ICU' 
+    THEN '3_ventilatory_support_outside_ICU' 
   WHEN
     02_Covid_admission = 1
     THEN '2_hospitalised'
@@ -465,6 +467,7 @@ create_table("ccu013_covid_trajectory_paper_cohort_wave2")
 # COMMAND ----------
 
 # MAGIC %sql
+# MAGIC -- min date(2020-09-30), max date(2021-03-12), min followup_end(2021-02-12), max followup_end(2021-03-12)
 # MAGIC SELECT min (date), max(date), min(followup_end), max(followup_end) FROM dars_nic_391419_j3w9t_collab.ccu013_covid_trajectory_paper_cohort_wave2
 
 # COMMAND ----------
@@ -557,7 +560,7 @@ SELECT
     (03_ECMO_treatment = 1
     OR 03_IMV_treatment = 1
     OR 03_NIV_treatment = 1)
-    THEN '03_critical_care_outside_ICU' 
+    THEN '3_ventilatory_support_outside_ICU' 
   WHEN
     02_Covid_admission = 1
     THEN '2_hospitalised'
@@ -632,11 +635,13 @@ display(cohort)
 # COMMAND ----------
 
 # MAGIC %sql
+# MAGIC --- 9/7/2021 = 2878573
 # MAGIC SELECT COUNT(distinct person_id_deid) FROM dars_nic_391419_j3w9t_collab.ccu013_covid_trajectory_paper_cohort_wave2
 
 # COMMAND ----------
 
 # MAGIC %sql
+# MAGIC --- 9/7/2021 = 2878573
 # MAGIC SELECT COUNT(distinct person_id_deid) FROM dars_nic_391419_j3w9t_collab.ccu013_covid_trajectory_paper_cohort_survival_wave2
 
 # COMMAND ----------
@@ -661,10 +666,12 @@ display(cohort)
 # COMMAND ----------
 
 # MAGIC %sql
+# MAGIC --- 9/7/2021 = 964
 # MAGIC select (SUM(dose2_prior_to_event)) FROM global_temp.ccu013_covid_trajectory_paper_cohort_wave2
 
 # COMMAND ----------
 
 # MAGIC  %sql
+# MAGIC  --- 9/7/2021 = 1117322
 # MAGIC  SELECT count(distinct person_id_deid) FROM dars_nic_391419_j3w9t_collab.ccu013_covid_trajectory_paper_cohort_survival_wave2 a
 # MAGIC  LEFT ANTI JOIN  dars_nic_391419_j3w9t_collab.ccu013_vaccine_status_temp as b ON a.person_id_deid = b.person_id_deid

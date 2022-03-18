@@ -27,11 +27,14 @@
 # MAGIC  
 # MAGIC **Reviewer(s)** ⚠ UNREVIEWED
 # MAGIC  
-# MAGIC **Date last updated** 2021-09-09
+# MAGIC **Date last updated** 2022-01-22
 # MAGIC  
 # MAGIC **Date last reviewed** *NA*
 # MAGIC  
-# MAGIC **Date last run** 2021-09-09
+# MAGIC **Date last run** 2022-01-22  
+# MAGIC 
+# MAGIC **Changelog**  
+# MAGIC * `2022-01-22` Renamed `critical_care` -> `ventilatory_support` acknowledging reviewer comments that 'critical care' implies more than just ventilatory treatment, e.g. nursing, monitoring
 # MAGIC  
 # MAGIC **Data input**  
 # MAGIC * `dars_nic_391419_j3w9t_collab.ccu013_covid_trajectory` Specified in cell 4 below  
@@ -182,7 +185,7 @@ SELECT
     OR 03_ICU_admission = 1
     OR 03_IMV_treatment = 1
     OR 03_NIV_treatment = 1
-    THEN '3_critical_care' 
+    THEN '3_ventilatory_support' 
   WHEN
     02_Covid_admission = 1
     THEN '2_hospitalised'
@@ -200,15 +203,15 @@ FROM
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## 3.4 `critical_care` aggregate variable
+# MAGIC ## 3.4 `ventilatory_support` aggregate variable
 # MAGIC Chris: I find myself implementing this frequently in SQL for R analysis therefore will incorporate here
 
 # COMMAND ----------
 
-critical_care = spark.sql(f"""
+ventilatory_support = spark.sql(f"""
 SELECT
   distinct person_id_deid,
-  1 as critical_care
+  1 as ventilatory_support
 FROM 
   {trajectory_table}
 WHERE 
@@ -235,7 +238,7 @@ cohort  = date_first \
           .join(severity, 
                 "person_id_deid", 
                 "left") \
-          .join(critical_care, 
+          .join(ventilatory_support, 
                 "person_id_deid", 
                 "left") \
           .fillna(0)

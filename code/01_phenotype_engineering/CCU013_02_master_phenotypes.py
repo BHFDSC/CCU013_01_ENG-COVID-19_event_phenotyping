@@ -135,7 +135,9 @@ from pyspark.sql.types import DateType
 # MAGIC SELECT person_id_deid, date, 
 # MAGIC "01_Covid_positive_test" as covid_phenotype, 
 # MAGIC "" as clinical_code, 
-# MAGIC CASE WHEN REPORTING_LAB_ID = '840' THEN "pillar_2" ELSE "pillar_1" END as description,
+# MAGIC -- TODO: wranglers please clarify whether LAB ID 840 is still the best means of identifying pillar 1 vs 2
+# MAGIC -- CASE WHEN REPORTING_LAB_ID = '840' THEN "pillar_2" ELSE "pillar_1" END as description,
+# MAGIC "" as description,
 # MAGIC "confirmed" as covid_status,
 # MAGIC "" as code,
 # MAGIC "SGSS" as source, date_is
@@ -158,7 +160,7 @@ from pyspark.sql.types import DateType
 # MAGIC SELECT person_id_deid, date, 
 # MAGIC "01_GP_covid_diagnosis" as covid_phenotype,
 # MAGIC clinical_code, description,
-# MAGIC "confirmed" as covid_status, --- NEED To inspect and identify which are only suspected!
+# MAGIC "" as covid_status, --- See SNOMED code description
 # MAGIC "SNOMED" as code, 
 # MAGIC "GDPPR" as source, date_is 
 # MAGIC from cte_gdppr
@@ -221,7 +223,7 @@ from pyspark.sql.types import DateType
 # MAGIC "02_Covid_admission" as covid_phenotype,
 # MAGIC "" as clinical_code, 
 # MAGIC "HospitalAdmissionDate IS NOT null" as description,
-# MAGIC "confirmed" as covid_status,
+# MAGIC "" as covid_status,
 # MAGIC "CHESS" as source, 
 # MAGIC "" as code,
 # MAGIC "HospitalAdmissionDate" as date_is
@@ -265,7 +267,7 @@ from pyspark.sql.types import DateType
 # MAGIC "03_ICU_admission" as covid_phenotype,
 # MAGIC "" as clinical_code, 
 # MAGIC "DateAdmittedICU IS NOT null" as description,
-# MAGIC "confirmed" as covid_status,
+# MAGIC "" as covid_status,
 # MAGIC "CHESS" as source, 
 # MAGIC "" as code,
 # MAGIC "DateAdmittedICU" as date_is
@@ -282,7 +284,7 @@ from pyspark.sql.types import DateType
 # MAGIC '03_ICU_admission' as covid_phenotype,
 # MAGIC "" as clinical_code,
 # MAGIC "id is in hes_cc table" as description,
-# MAGIC "confirmed" as covid_status,
+# MAGIC "" as covid_status,
 # MAGIC "" as code,
 # MAGIC 'HES CC' as source, cc.date_is, BRESSUPDAYS, ARESSUPDAYS
 # MAGIC FROM dars_nic_391419_j3w9t_collab.ccu013_tmp_apc as apc
@@ -305,7 +307,7 @@ from pyspark.sql.types import DateType
 # MAGIC "03_NIV_treatment" as covid_phenotype,
 # MAGIC "" as clinical_code, 
 # MAGIC "Highflownasaloxygen OR NoninvasiveMechanicalventilation == Yes" as description,
-# MAGIC "confirmed" as covid_status,
+# MAGIC "" as covid_status,
 # MAGIC "CHESS" as source, 
 # MAGIC "" as code,
 # MAGIC "HospitalAdmissionDate" as date_is -- Can't be any more precise
@@ -324,7 +326,7 @@ from pyspark.sql.types import DateType
 # MAGIC '03_NIV_treatment' as covid_phenotype,
 # MAGIC "" as clinical_code,
 # MAGIC "bressupdays > 0" as description,
-# MAGIC "confirmed" as covid_status,
+# MAGIC "" as covid_status,
 # MAGIC "" as code,
 # MAGIC 'HES CC' as source, date_is, BRESSUPDAYS, ARESSUPDAYS
 # MAGIC FROM global_temp.ccu013_cc_covid
@@ -341,7 +343,7 @@ from pyspark.sql.types import DateType
 # MAGIC when OPERTN_4_CONCAT LIKE "%E856%" THEN 'E85.6' Else '0' End) as clinical_code,
 # MAGIC (case when OPERTN_4_CONCAT LIKE "%E852%" THEN 'Non-invasive ventilation NEC'
 # MAGIC when OPERTN_4_CONCAT LIKE "%E856%" THEN 'Continuous positive airway pressure' Else '0' End) as description,
-# MAGIC "confirmed" as covid_status,
+# MAGIC "" as covid_status,
 # MAGIC "HES APC" as source,
 # MAGIC "OPCS" as code, date_is, SUSRECID
 # MAGIC FROM dars_nic_391419_j3w9t_collab.ccu013_tmp_apc
@@ -361,7 +363,7 @@ from pyspark.sql.types import DateType
 # MAGIC when PROCEDURE_CONCAT LIKE "%E856%" OR PROCEDURE_CONCAT LIKE "%E85.6%" THEN 'E85.6' Else '0' End) as clinical_code,
 # MAGIC (case when PROCEDURE_CONCAT LIKE "%E852%" OR PROCEDURE_CONCAT LIKE "%E85.2%" THEN 'Non-invasive ventilation NEC'
 # MAGIC when PROCEDURE_CONCAT LIKE "%E856%" OR PROCEDURE_CONCAT LIKE "%E85.6%" THEN 'Continuous positive airway pressure' Else '0' End) as description,
-# MAGIC "confirmed" as covid_status,
+# MAGIC "" as covid_status,
 # MAGIC "SUS" as source, 
 # MAGIC "OPCS" as code, "PRIMARY_PROCEDURE_DATE" as date_is
 # MAGIC FROM dars_nic_391419_j3w9t_collab.ccu013_tmp_sus
@@ -386,7 +388,7 @@ from pyspark.sql.types import DateType
 # MAGIC '03_IMV_treatment' as covid_phenotype,
 # MAGIC "" as clinical_code,
 # MAGIC "ARESSUPDAYS > 0" as description,
-# MAGIC "confirmed" as covid_status,
+# MAGIC "" as covid_status,
 # MAGIC "" as code,
 # MAGIC 'HES CC' as source, date_is, BRESSUPDAYS, ARESSUPDAYS
 # MAGIC FROM global_temp.ccu013_cc_covid
@@ -401,7 +403,7 @@ from pyspark.sql.types import DateType
 # MAGIC "03_IMV_treatment" as covid_phenotype,
 # MAGIC "" as clinical_code, 
 # MAGIC "Invasivemechanicalventilation == Yes" as description,
-# MAGIC "confirmed" as covid_status,
+# MAGIC "" as covid_status,
 # MAGIC "CHESS" as source, 
 # MAGIC "" as code,
 # MAGIC "DateAdmittedICU" as date_is -- Using ICU date as probably most of the IMV happened there, but may lose some records (250/10k)
@@ -420,7 +422,7 @@ from pyspark.sql.types import DateType
 # MAGIC when OPERTN_4_CONCAT LIKE "%X56%" THEN 'X56' Else '0' End) as clinical_code,
 # MAGIC (case when OPERTN_4_CONCAT LIKE "%E851%" THEN 'Invasive ventilation'
 # MAGIC when OPERTN_4_CONCAT LIKE "%X56%" THEN 'Intubation of trachea' Else '0' End) as description,
-# MAGIC "confirmed" as covid_status,
+# MAGIC "" as covid_status,
 # MAGIC "HES APC" as source, 
 # MAGIC "OPCS" as code, date_is, SUSRECID
 # MAGIC FROM dars_nic_391419_j3w9t_collab.ccu013_tmp_apc
@@ -438,7 +440,7 @@ from pyspark.sql.types import DateType
 # MAGIC when PROCEDURE_CONCAT LIKE "%X56%" THEN 'X56' Else '0' End) as clinical_code,
 # MAGIC (case when PROCEDURE_CONCAT LIKE "%E851%" OR PROCEDURE_CONCAT LIKE "%E85.1%" THEN 'Invasive ventilation'
 # MAGIC when PROCEDURE_CONCAT LIKE "%X56%" THEN 'Intubation of trachea' Else '0' End) as description,
-# MAGIC "confirmed" as covid_status,
+# MAGIC "" as covid_status,
 # MAGIC "SUS" as source, 
 # MAGIC "OPCS" as code, "PRIMARY_PROCEDURE_DATE" as date_is
 # MAGIC FROM dars_nic_391419_j3w9t_collab.ccu013_tmp_sus
@@ -461,7 +463,7 @@ from pyspark.sql.types import DateType
 # MAGIC "03_ECMO_treatment" as covid_phenotype,
 # MAGIC "" as clinical_code, 
 # MAGIC "RespiratorySupportECMO == Yes" as description,
-# MAGIC "confirmed" as covid_status,
+# MAGIC "" as covid_status,
 # MAGIC "CHESS" as source, 
 # MAGIC "" as code,
 # MAGIC "DateAdmittedICU" as date_is -- Reasonable
@@ -478,7 +480,7 @@ from pyspark.sql.types import DateType
 # MAGIC "03_ECMO_treatment" as covid_phenotype,
 # MAGIC "X58.1" as clinical_code,
 # MAGIC "Extracorporeal membrane oxygenation" as description,
-# MAGIC "confirmed" as covid_status,
+# MAGIC "" as covid_status,
 # MAGIC "HES APC" as source, 
 # MAGIC "OPCS" as code, date_is, SUSRECID
 # MAGIC FROM dars_nic_391419_j3w9t_collab.ccu013_tmp_apc
@@ -495,7 +497,7 @@ from pyspark.sql.types import DateType
 # MAGIC "03_ECMO_treatment" as covid_phenotype,
 # MAGIC "X58.1" as clinical_code,
 # MAGIC "Extracorporeal membrane oxygenation" as description,
-# MAGIC "confirmed" as covid_status,
+# MAGIC "" as covid_status,
 # MAGIC "SUS" as source, 
 # MAGIC "OPCS" as code, "PRIMARY_PROCEDURE_DATE" as date_is
 # MAGIC FROM dars_nic_391419_j3w9t_collab.ccu013_tmp_sus
@@ -614,6 +616,7 @@ from pyspark.sql.types import DateType
 # MAGIC AND (DISMETH = 4 -- died
 # MAGIC       OR 
 # MAGIC     DISDEST = 79) -- discharge destination not applicable, died or stillborn
+# MAGIC     -- WARNING hard-coded study-start date
 # MAGIC AND (DISDATE >= TO_DATE("20200123", "yyyyMMdd")) -- death after study start
 
 # COMMAND ----------
@@ -832,7 +835,8 @@ create_table("ccu013_covid_trajectory")
 # MAGIC -- OLD value after enforcing everyone has to be alive and in gdppr at study start and minimal followup 28 days
 # MAGIC -- OLD value @ 150621 3992872 after going back to no cohort subset and excluding pillar2-antigen and hes_op as sources
 # MAGIC -- Current value @220621 after accidental table deletion is still 3992872 - no damage done!
-# MAGIC -- Current value @170821 - 5044357
+# MAGIC -- OLD value @170821 - 5044357
+# MAGIC 
 # MAGIC SELECT count(DISTINCT person_id_deid)
 # MAGIC FROM dars_nic_391419_j3w9t_collab.ccu013_covid_trajectory
 
@@ -862,7 +866,6 @@ create_table("ccu013_covid_trajectory")
 
 # COMMAND ----------
 
-# This takes ages 4h 
 drop_table("ccu013_covid_mild")
 create_table("ccu013_covid_mild") 
 
@@ -1009,7 +1012,7 @@ create_table("ccu013_covid_severity")
 # MAGIC -- OLD value @ 04.06.21 = 3977185
 # MAGIC -- OLD value @ 15.06.21 = 3772432
 # MAGIC -- OLD value @ 15.06.21 = 3992872
-# MAGIC -- current value @ 17.08.21 = 5044357
+# MAGIC -- OLD value @ 17.08.21 = 5044357
 # MAGIC SELECT count(DISTINCT person_id_deid)
 # MAGIC FROM dars_nic_391419_j3w9t_collab.ccu013_covid_severity
 
@@ -1021,26 +1024,26 @@ create_table("ccu013_covid_severity")
 # COMMAND ----------
 
 # Uncomment to tidy
-drop_table("ccu013_covid_mild")
-drop_table("ccu013_covid_moderate")
-drop_table("ccu013_covid_severe")
-drop_table("ccu013_covid_severe_death")
-drop_table("ccu013_covid_not_mild")
-drop_table("ccu013_covid_not_mild_or_severe")
-drop_table("ccu013_covid_severe_deaths")
-drop_table("ccu013_tmp_apc")
-drop_table("ccu013_tmp_cc")
-drop_table("ccu013_tmp_op")
-drop_table("ccu013_tmp_chess")
-drop_table("ccu013_tmp_sgss")
-drop_table("ccu013_tmp_deaths")
-drop_table("ccu013_tmp_gdppr")
-drop_table("ccu013_tmp_sus")
-drop_table("ccu013_tmp_pillar2")
-drop_table("tmp_ccu013_covid_trajectory_delta")
-drop_table("tmp_ccu013_covid_trajectory")
+# drop_table("ccu013_covid_mild")
+# drop_table("ccu013_covid_moderate")
+# drop_table("ccu013_covid_severe")
+# drop_table("ccu013_covid_severe_death")
+# drop_table("ccu013_covid_not_mild")
+# drop_table("ccu013_covid_not_mild_or_severe")
+# drop_table("ccu013_covid_severe_deaths")
+# drop_table("ccu013_tmp_apc")
+# drop_table("ccu013_tmp_cc")
+# drop_table("ccu013_tmp_op")
+# drop_table("ccu013_tmp_chess")
+# drop_table("ccu013_tmp_sgss")
+# drop_table("ccu013_tmp_deaths")
+# drop_table("ccu013_tmp_gdppr")
+# drop_table("ccu013_tmp_sus")
+# drop_table("ccu013_tmp_pillar2")
+# drop_table("tmp_ccu013_covid_trajectory_delta")
+# drop_table("tmp_ccu013_covid_trajectory")
 
 # COMMAND ----------
 
-drop_table("ccu013_severity_paper_cohort_tmp")
-drop_table("ccu013_jht_death_checks_tmp")
+# drop_table("ccu013_severity_paper_cohort_tmp")
+# drop_table("ccu013_jht_death_checks_tmp")

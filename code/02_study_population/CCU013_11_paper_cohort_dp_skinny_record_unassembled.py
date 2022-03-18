@@ -12,11 +12,9 @@
 # MAGIC  
 # MAGIC **Reviewer(s)** Angela Wood
 # MAGIC  
-# MAGIC **Date last updated** 2021-08-17
+# MAGIC **Date last updated** 2022-01-22
 # MAGIC  
-# MAGIC **Date last reviewed** 2021-08-17
-# MAGIC  
-# MAGIC **Date last run** 2021-08-17
+# MAGIC **Date last run** `1/22/2022, 11:51:50 AM `
 # MAGIC  
 # MAGIC **Data input** [HES, GDPPR, Deaths]
 # MAGIC 
@@ -55,7 +53,7 @@
 
 # COMMAND ----------
 
-production_date = "2021-07-29 13:39:04.161949"
+production_date = "2022-01-20 14:58:52.353312"
 
 # COMMAND ----------
 
@@ -168,33 +166,6 @@ gdppr.createOrReplaceGlobalTempView('ccu013_dp_gdppr_patients')
 
 # COMMAND ----------
 
-# MAGIC %sql
-# MAGIC --- Pre conversion to spark! and using frozen data from Mehrdad
-# MAGIC ---CREATE OR REPLACE GLOBAL TEMP VIEW ccu013_dp_gdppr_patients AS
-# MAGIC ---    SELECT NHS_NUMBER_DEID,
-# MAGIC ---          ETHNIC,
-# MAGIC ---          SEX,
-# MAGIC ---          DATE_OF_BIRTH,
-# MAGIC ---          DATE_OF_DEATH,
-# MAGIC ---          RECORD_DATE,
-# MAGIC ---          record_id,
-# MAGIC ---          dataset,
-# MAGIC ---          primary
-# MAGIC ---    FROM (
-# MAGIC ---                SELECT NHS_NUMBER_DEID, 
-# MAGIC ---                      gdppr.ETHNIC, 
-# MAGIC ---                      gdppr.SEX,
-# MAGIC ---                      to_date(string(YEAR_OF_BIRTH),"yyyy") as DATE_OF_BIRTH,
-# MAGIC ---                      to_date(string(YEAR_OF_DEATH),"yyyy") as DATE_OF_DEATH,
-# MAGIC ---                      REPORTING_PERIOD_END_DATE as RECORD_DATE, -- I got this off Natasha from Primary Care
-# MAGIC ---                      NULL as record_id,
-# MAGIC ---                      'GDPPR' as dataset,
-# MAGIC ---                      1 as primary
-# MAGIC ---                FROM dars_nic_391419_j3w9t_collab.ccu003_direfcts_dataprep_1_gdppr_frzon28may_mm_210528 as gdppr 
-# MAGIC ---        )
-
-# COMMAND ----------
-
 # MAGIC %md GDPPR can also store the patient ethnicity in the `CODE` column as a SNOMED code, hence we need to bring this in as another record for the patient (but with null for the other features as they come from the generic record above)
 
 # COMMAND ----------
@@ -225,34 +196,6 @@ gdppr_etnic.createOrReplaceGlobalTempView('ccu013_dp_gdppr_patients_SNOMED')
 
 # COMMAND ----------
 
-# MAGIC %sql
-# MAGIC --- Pre conversion to spark! and using frozen data from Mehrdad
-# MAGIC ---CREATE OR REPLACE GLOBAL TEMP VIEW ccu013_dp_gdppr_patients_SNOMED AS
-# MAGIC ---    SELECT NHS_NUMBER_DEID,
-# MAGIC ---          ETHNIC,
-# MAGIC ---          SEX,
-# MAGIC ---          DATE_OF_BIRTH,
-# MAGIC ---          DATE_OF_DEATH,
-# MAGIC ---          RECORD_DATE,
-# MAGIC ---          record_id,
-# MAGIC ---          dataset,
-# MAGIC ---          primary
-# MAGIC ---    FROM (
-# MAGIC ---                SELECT NHS_NUMBER_DEID, 
-# MAGIC ---                     eth.PrimaryCode as ETHNIC, 
-# MAGIC ---                      gdppr.SEX,
-# MAGIC ---                      to_date(string(YEAR_OF_BIRTH),"yyyy") as DATE_OF_BIRTH,
-# MAGIC ---                      to_date(string(YEAR_OF_DEATH),"yyyy") as DATE_OF_DEATH,
-# MAGIC ---                      DATE as RECORD_DATE,
-# MAGIC ---                      NULL as record_id,
-# MAGIC ---                      'GDPPR_snomed' as dataset,
-# MAGIC ---                      1 as primary
-# MAGIC ---                FROM dars_nic_391419_j3w9t_collab.ccu003_direfcts_dataprep_1_gdppr_frzon28may_mm_210528 as gdppr
-# MAGIC ---                INNER JOIN dss_corporate.gdppr_ethnicity_mappings eth on gdppr.CODE = eth.ConceptId             
-# MAGIC ---        )
-
-# COMMAND ----------
-
 # MAGIC %md ### Single death per patient
 # MAGIC In the deaths table (Civil registration deaths), some unfortunate people are down as dying twice. Let's take the most recent death date. 
 
@@ -277,23 +220,6 @@ and TO_DATE(REG_DATE_OF_DEATH, "yyyyMMdd") > '1900-01-01'
 AND TO_DATE(REG_DATE_OF_DEATH, "yyyyMMdd") <= current_date()
 ''')
 death_single.createOrReplaceGlobalTempView('ccu013_dp_single_patient_death')
-
-# COMMAND ----------
-
-# MAGIC %sql
-# MAGIC --- Pre conversion to spark! and using frozen data from Mehrdad
-# MAGIC ---CREATE OR REPLACE GLOBAL TEMP VIEW ccu013_dp_single_patient_death AS
-# MAGIC 
-# MAGIC ---SELECT * 
-# MAGIC ---FROM 
-# MAGIC ---  (SELECT * , row_number() OVER (PARTITION BY DEC_CONF_NHS_NUMBER_CLEAN_DEID 
-# MAGIC ---                                      ORDER BY REG_DATE desc, REG_DATE_OF_DEATH desc) as death_rank
-# MAGIC ---    FROM dars_nic_391419_j3w9t_collab.ccu003_direfcts_dataprep_1_deaths_frzon28may_mm_210528
-# MAGIC ---    ) cte
-# MAGIC ---WHERE death_rank = 1
-# MAGIC ---AND DEC_CONF_NHS_NUMBER_CLEAN_DEID IS NOT NULL
-# MAGIC ---and TO_DATE(REG_DATE_OF_DEATH, "yyyyMMdd") > '1900-01-01'
-# MAGIC ---AND TO_DATE(REG_DATE_OF_DEATH, "yyyyMMdd") <= current_date()
 
 # COMMAND ----------
 
@@ -419,34 +345,6 @@ PIVOT (MAX(presence) FOR data_table in ("deaths", "sgss", "gdppr", "hes_apc", "h
 ''')
 
 presence.createOrReplaceGlobalTempView('ccu013_dp_patient_dataset_presence_lookup')
-
-# COMMAND ----------
-
-# MAGIC %sql
-# MAGIC --- Pre conversion to spark! and using frozen data from Mehrdad
-# MAGIC ---CREATE OR REPLACE GLOBAL TEMP VIEW ccu013_dp_patient_dataset_presence_lookup AS
-# MAGIC ---SELECT NHS_NUMBER_DEID,
-# MAGIC ---      COALESCE(deaths, 0) as deaths,
-# MAGIC ---      COALESCE(sgss, 0) as sgss,
-# MAGIC ---      COALESCE(gdppr,0) as gdppr,
-# MAGIC ---      COALESCE(hes_apc, 0) as hes_apc,
-# MAGIC ---      COALESCE(hes_op, 0) as hes_op,
-# MAGIC ---      COALESCE(hes_ae, 0) as hes_ae,
-# MAGIC ---      CASE WHEN hes_ae = 1 or hes_apc=1 or hes_op = 1 THEN 1 ELSE 0 END as hes
-# MAGIC ---FROM (
-# MAGIC ---SELECT DISTINCT DEC_CONF_NHS_NUMBER_CLEAN_DEID as NHS_NUMBER_DEID, "deaths" as data_table, 1 as presence FROM dars_nic_391419_j3w9t_collab.ccu003_direfcts_dataprep_1_deaths_frzon28may_mm_210528
-# MAGIC ---union all
-# MAGIC ---SELECT DISTINCT PERSON_ID_DEID as NHS_NUMBER_DEID, "sgss" as data_table, 1 as presence FROM dars_nic_391419_j3w9t_collab.ccu003_direfcts_dataprep_1_sgss_frzon28may_mm_210528
-# MAGIC ---union all
-# MAGIC ---SELECT DISTINCT NHS_NUMBER_DEID, "gdppr" as data_table, 1 as presence FROM global_temp.ccu013_dp_gdppr_patients
-# MAGIC ---union all
-# MAGIC ---SELECT DISTINCT NHS_NUMBER_DEID, "hes_apc" as data_table, 1 as presence FROM global_temp.ccu013_dp_all_hes_apc
-# MAGIC ---union all
-# MAGIC ---SELECT DISTINCT NHS_NUMBER_DEID, "hes_ae" as data_table, 1 as presence FROM global_temp.ccu013_dp_all_hes_ae
-# MAGIC ---union all
-# MAGIC ---SELECT DISTINCT NHS_NUMBER_DEID, "hes_op" as data_table, 1 as presence FROM global_temp.ccu013_dp_all_hes_op
-# MAGIC ---)
-# MAGIC ---PIVOT (MAX(presence) FOR data_table in ("deaths", "sgss", "gdppr", "hes_apc", "hes_op", "hes_ae"))
 
 # COMMAND ----------
 

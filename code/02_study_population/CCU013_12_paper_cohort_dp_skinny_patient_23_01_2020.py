@@ -25,11 +25,9 @@
 # MAGIC  
 # MAGIC **Reviewer(s)** Angela Wood
 # MAGIC  
-# MAGIC **Date last updated** 2021-08-17
+# MAGIC **Date last updated** 2021-01-22
 # MAGIC  
-# MAGIC **Date last reviewed** 2021-08-17
-# MAGIC  
-# MAGIC **Date last run** 2020-08-17
+# MAGIC **Date last run** `1/22/2022, 12:52:31 PM`
 # MAGIC  
 # MAGIC **Data input** [**table**: `dars_nic_391419_j3w9t_collab.ccu013_dp_patient_skinny_unassembled`]
 # MAGIC 
@@ -71,7 +69,8 @@ cohort_start = '2020-01-23'
 
 # MAGIC %sql
 # MAGIC --- old value pre August update 106,011,394
-# MAGIC --- Current value @ 17.08.2021  107,194,954
+# MAGIC --- old value @ 17.08.2021      107,194,954
+# MAGIC --- Current value @ 22.01.2022  109,858,924
 # MAGIC SELECT count(DISTINCT NHS_NUMBER_DEID) from dars_nic_391419_j3w9t_collab.ccu013_dp_patient_skinny_unassembled
 
 # COMMAND ----------
@@ -114,8 +113,9 @@ create_table("ccu013_dp_patient_fields_ranked_pre_cutoff")
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC --- old value pre August update 99,531,011
-# MAGIC --- Current value @ 17.08.2021  99,934,779
+# MAGIC --- old value pre August update  99,531,011
+# MAGIC --- old value @ 17.08.2021       99,934,779
+# MAGIC --- Current value @ 22.01.2022  100,118,189
 # MAGIC SELECT count(DISTINCT NHS_NUMBER_DEID) from dars_nic_391419_j3w9t_collab.ccu013_dp_patient_fields_ranked_pre_cutoff
 
 # COMMAND ----------
@@ -130,8 +130,7 @@ create_table("ccu013_dp_patient_fields_ranked_pre_cutoff")
 # MAGIC       CASE WHEN ETHNICITY_CODE IN ('1','2','3','N','M','P') THEN "Black or Black British"
 # MAGIC            WHEN ETHNICITY_CODE IN ('0','A','B','C') THEN "White"
 # MAGIC            WHEN ETHNICITY_CODE IN ('4','5','6','L','K','J','H') THEN "Asian or Asian British"
-# MAGIC            WHEN ETHNICITY_CODE IN ('7','8','W','T','S','R') THEN "Other Ethnic Gr
-# MAGIC            oups"
+# MAGIC            WHEN ETHNICITY_CODE IN ('7','8','W','T','S','R') THEN "Other Ethnic Groups"
 # MAGIC            WHEN ETHNICITY_CODE IN ('D','E','F','G') THEN "Mixed"
 # MAGIC            WHEN ETHNICITY_CODE IN ('9','Z','X') THEN "Unknown"
 # MAGIC            ELSE 'Unknown' END as ETHNIC_GROUP  
@@ -178,7 +177,8 @@ create_table("ccu013_dp_patient_fields_ranked_pre_cutoff")
 
 # MAGIC %sql
 # MAGIC --- old value pre August update 55,988,064
-# MAGIC --- Current value @ 17.08.2021  56,721,158
+# MAGIC --- old value @ 17.08.2021      56,721,158
+# MAGIC --- Current value @             57,175,620
 # MAGIC SELECT count(DISTINCT NHS_NUMBER_DEID) FROM global_temp.ccu013_dp_skinny_patient_23_01_2020
 
 # COMMAND ----------
@@ -193,12 +193,13 @@ import pyspark.sql.functions as f
 
 # MAGIC %sql
 # MAGIC --- old value pre August update 55,988,064
-# MAGIC --- Current value @ 17.08.2021  56,721,158
+# MAGIC --- old value @ 17.08.2021      56,721,158
+# MAGIC --- Current value @ 22.01.2022  57,175,620
 # MAGIC SELECT count(DISTINCT NHS_NUMBER_DEID) FROM global_temp.ccu013_dp_skinny_patient_23_01_2020_age
 
 # COMMAND ----------
 
-# MAGIC %md filter out the dead people - so we only have people which are **alive** on **1st Jan 2020**
+# MAGIC %md filter out the dead people - so we only have people which are **alive** on **23rd Jan 2020**
 
 # COMMAND ----------
 
@@ -207,7 +208,7 @@ import pyspark.sql.functions as f
 # MAGIC 
 # MAGIC SELECT * 
 # MAGIC FROM global_temp.ccu013_dp_skinny_patient_23_01_2020_age
-# MAGIC WHERE COALESCE(DATE_OF_DEATH, '2199-01-01') > '2020-01-01'
+# MAGIC WHERE COALESCE(DATE_OF_DEATH, '2199-01-01') > '2020-01-23'
 
 # COMMAND ----------
 
@@ -237,5 +238,6 @@ create_table("ccu013_dp_skinny_patient_23_01_2020", select_sql_script=f"SELECT *
 
 # MAGIC %sql
 # MAGIC --- old value pre August update 55,876,173
-# MAGIC --- Current value @ 17.08.2021 56,609,049
+# MAGIC --- old value @ 17.08.2021      56,609,049
+# MAGIC --- current value @ 22.01.2022  57,032,174
 # MAGIC SELECT count(DISTINCT NHS_NUMBER_DEID) FROM dars_nic_391419_j3w9t_collab.ccu013_dp_skinny_patient_23_01_2020

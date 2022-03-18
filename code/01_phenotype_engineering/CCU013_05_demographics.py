@@ -26,7 +26,7 @@
 # MAGIC  
 # MAGIC **Date last reviewed** *NA*
 # MAGIC  
-# MAGIC **Date last run** 2021-09-10
+# MAGIC **Date last run** 2022-01-22 
 # MAGIC  
 # MAGIC **Data input** `ccu013_covid_events` *See cell 4*
 # MAGIC   
@@ -48,8 +48,19 @@ from pyspark.sql.functions import lit, to_date, col, udf, substring, datediff, f
 
 # COMMAND ----------
 
+# MAGIC %md
+# MAGIC # Check master demographics rebuilt if updating prior to running!
+# MAGIC Dependencies:
+# MAGIC * [`1_demographics`](https://db.core.data.digital.nhs.uk/#notebook/3284853/command/3602362)  Check production date
+# MAGIC * [`2-1_CALIBER_codelist`](https://db.core.data.digital.nhs.uk/#notebook/3286046/command/3286047) does NOT need to be updated as codelists are static
+# MAGIC * [`2-2_CALIBER_skinny`](https://db.core.data.digital.nhs.uk/#notebook/3286010/command/3286011) Check production date
+# MAGIC * [`2-3_CALIBER_comorbidities_pre2020`](https://db.core.data.digital.nhs.uk/#notebook/3286218/command/3286219) No params
+# MAGIC * [`2-4_CALIBER-categories_pre2020`](https://db.core.data.digital.nhs.uk/#notebook/3285967/command/3285968) No params
+
+# COMMAND ----------
+
 # Params
-production_date = "2021-07-29 13:39:04.161949"
+production_date = "2022-01-20 14:58:52.353312" # Notebook CCU03_01_create_table_aliases   Cell 8
 
 # COVID-19 events
 events_table = "dars_nic_391419_j3w9t_collab.ccu013_covid_events"
@@ -127,6 +138,7 @@ cohort = cohort.join(high_risk, "person_id_deid", "left")
 
 # MAGIC %md
 # MAGIC ## 2.2 Long COVID
+# MAGIC **NB not in analysis owing to coding issues as highlighted by OpenSAFELY paper**
 
 # COMMAND ----------
 
@@ -200,10 +212,12 @@ spark.sql(f"OPTIMIZE dars_nic_391419_j3w9t_collab.{output_table} ZORDER BY perso
 
 # COMMAND ----------
 
+# Old value pre @22.01.2020 update: 5044357
 display(spark.sql(f"SELECT COUNT(*), COUNT(DISTINCT person_id_deid) FROM {events_table}"))
 
 # COMMAND ----------
 
+# Old value pre @22.01.2020 update: 5044357
 display(spark.sql(f"SELECT COUNT(*), COUNT(DISTINCT person_id_deid) FROM dars_nic_391419_j3w9t_collab.{output_table}"))
 
 # COMMAND ----------

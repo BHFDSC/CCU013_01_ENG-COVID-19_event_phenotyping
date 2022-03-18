@@ -16,11 +16,11 @@
 # MAGIC  
 # MAGIC **Reviewer(s)** 
 # MAGIC  
-# MAGIC **Date last updated** 2021-08-16
+# MAGIC **Date last updated** 2022-01-22
 # MAGIC  
 # MAGIC **Date last reviewed** 
 # MAGIC  
-# MAGIC **Date last run** 2021-08-16
+# MAGIC **Date last run** 2022-01-22
 # MAGIC  
 # MAGIC **Data input** 
 # MAGIC This notebook uses the archive tables made by the data wranglers - selecting the latest data by `productionDate`. The `productionDate` variabel is carried forward to master_phenotype in the `ccu13_tmp_gdppr` table, and will be saved in the main output tables; trajectory, severity and events, to ensure the data for the produced phenotypes is back tracable to source, for reproducability.
@@ -46,18 +46,25 @@
 
 # COMMAND ----------
 
+# MAGIC %run /Workspaces/dars_nic_391419_j3w9t_collab/CCU013/COVID-19-SEVERITY-PHENOTYPING/CCU013_00_helper_functions
+
+# COMMAND ----------
+
+LatestProductionDate = spark.sql("SELECT MAX(ProductionDate) FROM dars_nic_391419_j3w9t_collab.wrang002b_data_version_batchids").first()[0]
+LatestAPC = spark.sql("SELECT MAX(ADMIDATE) FROM dars_nic_391419_j3w9t_collab.hes_apc_all_years").first()[0]
+print(f"Most recent Production Date: {LatestProductionDate} \n Maximum date in HES APC is {LatestAPC} which represents a common cut-off across all datasets")
+
+# COMMAND ----------
+
 from pyspark.sql.functions import lit, to_date, col, udf, substring, regexp_replace, max
 from pyspark.sql import functions as f
 from datetime import datetime
 from pyspark.sql.types import DateType
 
 start_date = '2020-01-01'
-end_date = '2021-09-01' # The maximal date covered by all sources.
+# end_date = '2021-09-01' # The maximal date covered by all sources.
+end_date = '2021-11-30'
 # NB common cut-off data across all data sources is implemented in CCU013_13_paper_subset_data_to_cohort
-
-# COMMAND ----------
-
-# MAGIC %run /Workspaces/dars_nic_391419_j3w9t_collab/CCU013/COVID-19-SEVERITY-PHENOTYPING/CCU013_00_helper_functions
 
 # COMMAND ----------
 
@@ -78,7 +85,8 @@ end_date = '2021-09-01' # The maximal date covered by all sources.
 
 # COMMAND ----------
 
-production_date = "2021-08-18 14:47:00.887883"
+# production_date = "2021-08-18 14:47:00.887883"
+production_date = "2022-01-20 14:58:52.353312"
 
 # COMMAND ----------
 
@@ -105,12 +113,7 @@ create_table("ccu013_tmp_sgss")
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC SELECT min(date) FROM dars_nic_391419_j3w9t_collab.ccu013_tmp_sgss
-
-# COMMAND ----------
-
-# MAGIC %sql
-# MAGIC SELECT max(date) FROM dars_nic_391419_j3w9t_collab.ccu013_tmp_sgss
+# MAGIC SELECT min(date), max(date) FROM dars_nic_391419_j3w9t_collab.ccu013_tmp_sgss
 
 # COMMAND ----------
 
@@ -139,7 +142,7 @@ create_table("ccu013_tmp_gdppr")
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC SELECT max(date) FROM dars_nic_391419_j3w9t_collab.ccu013_tmp_gdppr
+# MAGIC SELECT min(date), max(date) FROM dars_nic_391419_j3w9t_collab.ccu013_tmp_gdppr
 
 # COMMAND ----------
 
@@ -169,7 +172,7 @@ create_table("ccu013_tmp_deaths")
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC SELECT max(death_date) FROM dars_nic_391419_j3w9t_collab.ccu013_tmp_deaths
+# MAGIC SELECT min(date), max(death_date) FROM dars_nic_391419_j3w9t_collab.ccu013_tmp_deaths
 
 # COMMAND ----------
 
@@ -200,7 +203,7 @@ create_table("ccu013_tmp_apc")
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC SELECT max(date) FROM dars_nic_391419_j3w9t_collab.ccu013_tmp_apc
+# MAGIC SELECT min(date), max(date) FROM dars_nic_391419_j3w9t_collab.ccu013_tmp_apc
 
 # COMMAND ----------
 
@@ -232,7 +235,7 @@ create_table("ccu013_tmp_cc")
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC SELECT max(date) FROM dars_nic_391419_j3w9t_collab.ccu013_tmp_cc
+# MAGIC SELECT min(date), max(date) FROM dars_nic_391419_j3w9t_collab.ccu013_tmp_cc
 
 # COMMAND ----------
 
@@ -289,14 +292,15 @@ create_table("ccu013_tmp_cc")
 
 # MAGIC %md
 # MAGIC ### 1.7 CHESS
+# MAGIC * Previously we weren't using the `_archive` table as it wasn't updated/didn't exist
 
 # COMMAND ----------
 
-chess = spark.sql('''SELECT PERSON_ID_DEID as person_id_deid, Typeofspecimen, Covid19, AdmittedToICU, Highflownasaloxygen, NoninvasiveMechanicalventilation, Invasivemechanicalventilation,
-                      RespiratorySupportECMO, DateAdmittedICU, HospitalAdmissionDate, InfectionSwabDate as date, 'InfectionSwabDate' as date_is 
-                      FROM dars_nic_391419_j3w9t.chess_dars_nic_391419_j3w9t''')    
-#chess = spark.sql(f'''SELECT PERSON_ID_DEID as person_id_deid, Typeofspecimen, Covid19, AdmittedToICU, Highflownasaloxygen, NoninvasiveMechanicalventilation, Invasivemechanicalventilation,
-#                      RespiratorySupportECMO, DateAdmittedICU, HospitalAdmissionDate, InfectionSwabDate as date, 'InfectionSwabDate' as date_is FROM #dars_nic_391419_j3w9t_collab.chess_dars_nic_391419_j3w9t_archive WHERE ProductionDate == "{production_date}"''')
+# chess = spark.sql('''SELECT PERSON_ID_DEID as person_id_deid, Typeofspecimen, Covid19, AdmittedToICU, Highflownasaloxygen, NoninvasiveMechanicalventilation, Invasivemechanicalventilation,
+#                       RespiratorySupportECMO, DateAdmittedICU, HospitalAdmissionDate, InfectionSwabDate as date, 'InfectionSwabDate' as date_is 
+#                       FROM dars_nic_391419_j3w9t.chess_dars_nic_391419_j3w9t''')    
+chess = spark.sql(f'''SELECT PERSON_ID_DEID as person_id_deid, Typeofspecimen, Covid19, AdmittedToICU, Highflownasaloxygen, NoninvasiveMechanicalventilation, Invasivemechanicalventilation,
+                     RespiratorySupportECMO, DateAdmittedICU, HospitalAdmissionDate, InfectionSwabDate as date, 'InfectionSwabDate' as date_is FROM dars_nic_391419_j3w9t_collab.chess_dars_nic_391419_j3w9t_archive WHERE ProductionDate == "{production_date}"''')
 chess = chess.filter(chess['Covid19'] == 'Yes')
 chess = chess.filter(chess['person_id_deid'].isNotNull())
 #chess = chess.filter((chess['date'] >= start_date) & (chess['date'] <= end_date))
@@ -311,7 +315,7 @@ display(chess)
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC SELECT max(date) FROM dars_nic_391419_j3w9t_collab.ccu013_tmp_chess
+# MAGIC SELECT min(date), max(date) FROM dars_nic_391419_j3w9t_collab.ccu013_tmp_chess
 
 # COMMAND ----------
 

@@ -22,11 +22,11 @@
 # MAGIC  
 # MAGIC **Reviewer(s)** 
 # MAGIC  
-# MAGIC **Date last updated** 2021-10-05
+# MAGIC **Date last updated** 2022-01-22
 # MAGIC  
 # MAGIC **Date last reviewed** *NA*
 # MAGIC  
-# MAGIC **Date last run** 2021-10-05
+# MAGIC **Date last run** 2022-01-22
 # MAGIC 
 # MAGIC **Changelog**  
 # MAGIC * `21-05-19 ` V1 initial eversion - single first date of code per patient
@@ -67,7 +67,7 @@ print("ProductionDate:", production_date)
 
 # Table names
 gdppr_table = "dars_nic_391419_j3w9t_collab.gdppr_dars_nic_391419_j3w9t_archive" # No non-archive equivalent
-hes_apc_table = "dars_nic_391419_j3w9t_collab.hes_apc_all_years" # Don't need archive as using ProductionDate
+hes_apc_table = "dars_nic_391419_j3w9t_collab.hes_apc_all_years_archive" 
 
 # without dars_nic_391419_j3w9t_collab. prefix
 output_table = "ccu013_caliber_skinny"

@@ -238,9 +238,9 @@ test(cohort)
 # COMMAND ----------
 
 # Params
-production_date = "2021-07-29 13:39:04.161949"
+production_date = "2022-01-20 14:58:52.353312"
 cohort_start = '2020-01-23' # For deaths
-cohort_end = '2021-05-31' # For deaths MANUALLY CALCULATED FOR NOW across datasets
+cohort_end = '2021-11-30' # For deaths MANUALLY CALCULATED FOR NOW across datasets
 
 # Population table i.e. the denominator for our work
 population_table = "dars_nic_391419_j3w9t_collab.ccu013_dp_skinny_patient_23_01_2020"
@@ -404,5 +404,25 @@ spark.sql(f"OPTIMIZE dars_nic_391419_j3w9t_collab.{output_table} ZORDER BY perso
 # MAGIC       OR severity = '3_critical_care'
 # MAGIC       OR severity = '4_death_only' 
 # MAGIC       then 1 else 0 end) as covid  
+# MAGIC FROM
+# MAGIC   dars_nic_391419_j3w9t_collab.ccu013_paper_table_one_56million_denominator
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC SELECT
+# MAGIC   COUNT(distinct person_id_deid) as population,
+# MAGIC   SUM(CASE WHEN severity = '0_positive'
+# MAGIC       OR severity = '1_gp'
+# MAGIC       OR severity = '2_hospitalised'
+# MAGIC       OR severity = '3_critical_care'
+# MAGIC       OR severity = '4_death_only' 
+# MAGIC       then 1 else 0 end) as covid,
+# MAGIC   round(SUM(CASE WHEN severity = '0_positive'
+# MAGIC       OR severity = '1_gp'
+# MAGIC       OR severity = '2_hospitalised'
+# MAGIC       OR severity = '3_critical_care'
+# MAGIC       OR severity = '4_death_only' 
+# MAGIC       then 1 else 0 end) / COUNT(distinct person_id_deid) * 100, 2) as percent_covid
 # MAGIC FROM
 # MAGIC   dars_nic_391419_j3w9t_collab.ccu013_paper_table_one_56million_denominator

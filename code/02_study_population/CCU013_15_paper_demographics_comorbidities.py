@@ -27,11 +27,11 @@
 # MAGIC  
 # MAGIC **Reviewer(s)** 
 # MAGIC  
-# MAGIC **Date last updated** 2021-09-07
+# MAGIC **Date last updated** 2022-01-23
 # MAGIC  
 # MAGIC **Date last reviewed** *NA*
 # MAGIC  
-# MAGIC **Date last run** 2021-10-06
+# MAGIC **Date last run** `1/23/2022, 1:43:55 PM`
 # MAGIC  
 # MAGIC **Data input**  
 # MAGIC * **`dars_nic_391419_j3w9t_collab.ccu013_covid_events_paper_cohort`**
@@ -66,7 +66,7 @@ from pyspark.sql.functions import lit, to_date, col, udf, substring, datediff, f
 # COMMAND ----------
 
 # Params
-production_date = "2021-07-29 13:39:04.161949"
+production_date = "2022-01-20 14:58:52.353312"
 
 # COVID-19 events
 events_table = "dars_nic_391419_j3w9t_collab.ccu013_covid_events_paper_cohort"
@@ -232,7 +232,7 @@ spark.sql(f"OPTIMIZE dars_nic_391419_j3w9t_collab.{output_table} ZORDER BY perso
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC -- 3469528
+# MAGIC -- 10/6/21 3469528
 # MAGIC SELECT COUNT(*), COUNT(DISTINCT person_id_deid) FROM dars_nic_391419_j3w9t_collab.ccu013_covid_events_demographics_paper_cohort
 
 # COMMAND ----------

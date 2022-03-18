@@ -16,7 +16,7 @@
 # MAGIC  
 # MAGIC **Date last reviewed** 
 # MAGIC  
-# MAGIC **Date last run** 2021-08-18
+# MAGIC **Date last run** 2022-01-23
 # MAGIC  
 # MAGIC **Data input** 
 # MAGIC 
@@ -33,8 +33,8 @@ from pyspark.sql import functions as f
 from datetime import datetime
 from pyspark.sql.types import DateType
 
-start_date = '2020-01-01'
-end_date = '2021-05-31' # The study end date
+start_date = '2020-01-23'
+end_date = '2021-11-30' # The study end date
 
 # COMMAND ----------
 
@@ -98,6 +98,13 @@ create_table("ccu013_vaccine_status_paper_cohort")
 
 # COMMAND ----------
 
+# MAGIC %sql
+# MAGIC --- 10/25/21 = obs 1,357,387, ids 1,357,387
+# MAGIC SELECT count(*) as observations, count(distinct person_id_deid) as individuals FROM dars_nic_391419_j3w9t_collab.ccu013_vaccine_status_paper_cohort
+# MAGIC WHERE dose2 is not NULL
+
+# COMMAND ----------
+
 # MAGIC %md
 # MAGIC # Compareing outcome in vaccinated vs unvaccinated during wave 2
 
@@ -117,12 +124,13 @@ create_table("ccu013_vaccine_status_paper_cohort")
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC --- N = 56,609,049 - Total population
+# MAGIC --- 9/13/21 N = 56,609,049 - Total population
 # MAGIC SELECT count(distinct NHS_NUMBER_DEID) FROM dars_nic_391419_j3w9t_collab.ccu013_dp_skinny_patient_23_01_2020
 
 # COMMAND ----------
 
 # MAGIC %sql
+# MAGIC --- 9/13/21 = 383,470
 # MAGIC --- Get people who have died before wave2
 # MAGIC SELECT count(distinct NHS_NUMBER_DEID) 
 # MAGIC FROM dars_nic_391419_j3w9t_collab.ccu013_dp_skinny_patient_23_01_2020 AS a
@@ -133,6 +141,7 @@ create_table("ccu013_vaccine_status_paper_cohort")
 # COMMAND ----------
 
 # MAGIC %sql
+# MAGIC --- 9/13/21 = 511,742
 # MAGIC --- Get all individuals who had a reported COVID-19 event prior to wave 2 start
 # MAGIC SELECT count(distinct a.person_id_deid) FROM (SELECT DISTINCT NHS_NUMBER_DEID as person_id_deid FROM dars_nic_391419_j3w9t_collab.ccu013_dp_skinny_patient_23_01_2020) as a
 # MAGIC INNER JOIN (SELECT person_id_deid FROM dars_nic_391419_j3w9t_collab.ccu013_covid_trajectory_paper_cohort WHERE date < "2020-09-30") as t
@@ -153,7 +162,7 @@ create_table("ccu013_vaccine_status_paper_cohort")
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC --- N = 55,774,208 - individuals WITHOUT a reported COVID-19 event prior to date and or All Alive!
+# MAGIC --- 9/13/21; N = 55,774,208 - individuals WITHOUT a reported COVID-19 event prior to date and or All Alive!
 # MAGIC SELECT count(distinct person_id_deid) FROM global_temp.ccu013_no_covid_before_wave2
 
 # COMMAND ----------
@@ -199,7 +208,7 @@ create_table("ccu013_no_covid_before_wave2_vax_status")
 
 # MAGIC %sql
 # MAGIC --- count of vaccinated vs unvaccinated
-# MAGIC --- Using 14 days as buffer; 9,562,898 | 19,638,856 | 26,572,454
+# MAGIC --- 23/01/21 = Using 14 days as buffer; 9,562,898 | 19,638,856 | 26,572,454
 # MAGIC SELECT vaccine_status, count(vaccine_status) as count
 # MAGIC FROM dars_nic_391419_j3w9t_collab.ccu013_no_covid_before_wave2_vax_status
 # MAGIC group by vaccine_status
@@ -213,6 +222,7 @@ create_table("ccu013_no_covid_before_wave2_vax_status")
 
 # MAGIC %sql
 # MAGIC --- Get people who have died before 1st of feb 2021
+# MAGIC --- 9/13/21 = 595,024
 # MAGIC SELECT count(distinct NHS_NUMBER_DEID) 
 # MAGIC FROM dars_nic_391419_j3w9t_collab.ccu013_dp_skinny_patient_23_01_2020 AS a
 # MAGIC RIGHT JOIN (SELECT person_id_deid, min(death_date) as death_date FROM dars_nic_391419_j3w9t_collab.ccu013_tmp_deaths group by person_id_deid) as b
@@ -223,6 +233,7 @@ create_table("ccu013_no_covid_before_wave2_vax_status")
 
 # MAGIC %sql
 # MAGIC --- Get all individuals who had a reported COVID-19 before 1st of feb 2021
+# MAGIC --- 9/13/21 = 3,181,019
 # MAGIC SELECT count(distinct a.person_id_deid) FROM (SELECT DISTINCT NHS_NUMBER_DEID as person_id_deid FROM dars_nic_391419_j3w9t_collab.ccu013_dp_skinny_patient_23_01_2020) as a
 # MAGIC INNER JOIN (SELECT person_id_deid FROM dars_nic_391419_j3w9t_collab.ccu013_covid_trajectory_paper_cohort WHERE date < "2021-02-01") as t
 # MAGIC ON a.person_id_deid = t.person_id_deid
@@ -242,7 +253,7 @@ create_table("ccu013_no_covid_before_wave2_vax_status")
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC --- N = 52,969,966 - individuals WITHOUT a reported COVID-19 event prior to date and or All Alive!
+# MAGIC --- 9/13/21 N = 52,969,966 - individuals WITHOUT a reported COVID-19 event prior to date and or All Alive!
 # MAGIC SELECT count(distinct person_id_deid) FROM global_temp.ccu013_no_covid_before_feb_2021
 
 # COMMAND ----------
@@ -283,7 +294,7 @@ create_table("ccu013_no_covid_before_feb_2021_vax_status")
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC --- Using 14 days as buffer; 3,040,532 | 421,811 | 49,507,623
+# MAGIC --- 9/13/21 = Using 14 days as buffer; 3,040,532 | 421,811 | 49,507,623
 # MAGIC SELECT vaccine_status, count(vaccine_status) as count
 # MAGIC FROM dars_nic_391419_j3w9t_collab.ccu013_no_covid_before_feb_2021_vax_status
 # MAGIC group by vaccine_status
@@ -371,6 +382,7 @@ create_table("ccu013_no_covid_before_feb_2021_vax_status_matching")
 # COMMAND ----------
 
 # MAGIC %sql
+# MAGIC --- 9/13/21 = 421811 vaccinated | 49507623 unvaccinated
 # MAGIC SELECT vaccine_status, count(vaccine_status) FROM dars_nic_391419_j3w9t_collab.ccu013_no_covid_before_feb_2021_vax_status_matching group by vaccine_status
 
 # COMMAND ----------

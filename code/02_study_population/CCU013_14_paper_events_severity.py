@@ -16,7 +16,7 @@
 # MAGIC     3.1. `0_Covid_infection` as catch-all  
 # MAGIC     3.2. `death_covid` if COVID-19 on death certificate, at any position  
 # MAGIC     3.3. `severity` mutually exclusive worst healthcare event, not including death unless death the only dataset from which patient is ascertained  
-# MAGIC     3.4. `critical_care` aggregated variable  
+# MAGIC     3.4. `critical_care` -> `ventilatory_support` aggregated variable  
 # MAGIC 4. Joins to produce cohort  
 # MAGIC     4.2. Tests no duplicates  
 # MAGIC     4.3. Creates delta table & optimises  
@@ -24,14 +24,15 @@
 # MAGIC **Project(s)** CCU013
 # MAGIC  
 # MAGIC **Author(s)** Chris Tomlinson
-# MAGIC  
-# MAGIC **Reviewer(s)** ⚠ UNREVIEWED
-# MAGIC  
+# MAGIC   
 # MAGIC **Date last updated** 2021-09-09
 # MAGIC  
 # MAGIC **Date last reviewed** *NA*
 # MAGIC  
-# MAGIC **Date last run** 2021-09-28
+# MAGIC **Date last run** `1/23/2022, 1:24:56 PM`
+# MAGIC 
+# MAGIC **Changelog**  
+# MAGIC * `2022-01-23` Renamed `critical_care` -> `ventilatory_support` acknowledging reviewer comments that 'critical care' implies more than just ventilatory treatment, e.g. nursing, monitoring
 # MAGIC  
 # MAGIC **Data input**  
 # MAGIC * `dars_nic_391419_j3w9t_collab.ccu013_covid_trajectory_paper_cohort` Specified in cell 4 below  
@@ -183,7 +184,7 @@ SELECT
     OR 03_ICU_admission = 1
     OR 03_IMV_treatment = 1
     OR 03_NIV_treatment = 1
-    THEN '3_critical_care' 
+    THEN '3_ventilatory_support' 
   WHEN
     02_Covid_admission = 1
     THEN '2_hospitalised'
@@ -201,15 +202,15 @@ FROM
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## 3.4 `critical_care` aggregate variable
+# MAGIC ## 3.4 `ventilatory_support` aggregate variable
 # MAGIC Chris: I find myself implementing this frequently in SQL for R analysis therefore will incorporate here
 
 # COMMAND ----------
 
-critical_care = spark.sql(f"""
+ventilatory_support = spark.sql(f"""
 SELECT
   distinct person_id_deid,
-  1 as critical_care
+  1 as ventilatory_support
 FROM 
   {trajectory_table}
 WHERE 
@@ -236,7 +237,7 @@ cohort  = date_first \
           .join(severity, 
                 "person_id_deid", 
                 "left") \
-          .join(critical_care, 
+          .join(ventilatory_support, 
                 "person_id_deid", 
                 "left") \
           .fillna(0)
@@ -273,11 +274,22 @@ display(cohort, 10)
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC -- 17/8: 3469528
-# MAGIC -- 28/9: 3469528
+# MAGIC -- 17/8/21: 3469528
+# MAGIC -- 28/9/21: 3469528
+# MAGIC -- 23/1/22: 7244925
 # MAGIC SELECT COUNT(distinct person_id_deid) FROM dars_nic_391419_j3w9t_collab.ccu013_covid_events_paper_cohort
 
 # COMMAND ----------
 
 # MAGIC %sql
 # MAGIC SELECT COUNT(distinct person_id_deid) FROM dars_nic_391419_j3w9t_collab.ccu013_covid_trajectory_paper_cohort
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC Check that all those with <28d follow-up die
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC SELECT * FROM dars_nic_391419_j3w9t_collab.ccu013_covid_events_paper_cohort WHERE date_first > '2021-11-02' AND death != 1

@@ -12,11 +12,11 @@
 # MAGIC  
 # MAGIC **Reviewer(s)** 
 # MAGIC  
-# MAGIC **Date last updated** 2021-08-17
+# MAGIC **Date last updated** 2022-01-22
 # MAGIC  
 # MAGIC **Date last reviewed** 
 # MAGIC  
-# MAGIC **Date last run** 2021-08-17
+# MAGIC **Date last run** 2022-01-22
 # MAGIC  
 # MAGIC **Data input**  
 # MAGIC 1. Descriptive Paper methodology derived cohort
@@ -62,15 +62,10 @@ from pyspark.sql.types import DateType
 
 # MAGIC %sql
 # MAGIC --- Individuals alive and registred in GDPPR on 23/01/2020
-# MAGIC --- Old value      = 55,876,173
-# MAGIC --- value @ 170821 = 56,609,049
+# MAGIC --- Old value              = 55,876,173
+# MAGIC --- Old @ 170821           = 56,609,049
+# MAGIC --- Current value @ 220122 = 57,032,174
 # MAGIC SELECT count(DISTINCT NHS_NUMBER_DEID) FROM dars_nic_391419_j3w9t_collab.ccu013_dp_skinny_patient_23_01_2020
-
-# COMMAND ----------
-
-# MAGIC %sql
-# MAGIC SELECT * FROM dars_nic_391419_j3w9t_collab.ccu013_dp_skinny_patient_23_01_2020
-# MAGIC WHERE DATE_OF_DEATH <= "2020-03-20"
 
 # COMMAND ----------
 
@@ -80,31 +75,47 @@ from pyspark.sql.types import DateType
 
 # COMMAND ----------
 
+# MAGIC %sql
+# MAGIC --- IMPORTANT check that no death date is larger than the study end date !!!
+# MAGIC ---- As that would cause errors in the code below
+# MAGIC SELECT MAX(date)
+# MAGIC FROM dars_nic_391419_j3w9t_collab.ccu013_covid_trajectory
+# MAGIC WHERE covid_phenotype == '04_Fatal_with_covid_diagnosis' OR
+# MAGIC covid_phenotype == '04_Fatal_without_covid_diagnosis' OR
+# MAGIC covid_phenotype == '04_Covid_inpatient_death'
+
+# COMMAND ----------
+
 from pyspark.sql.functions import *
+
+# Warning - update study end date
+study_end_date = lit(datetime(2021, 11, 30))
 
 all_fatal = spark.sql("""
 SELECT person_id_deid, MIN(date) AS death_date
 FROM dars_nic_391419_j3w9t_collab.ccu013_covid_trajectory
-WHERE covid_phenotype == '04_Fatal_with_covid_diagnosis' OR
+WHERE (covid_phenotype == '04_Fatal_with_covid_diagnosis' OR
 covid_phenotype == '04_Fatal_without_covid_diagnosis' OR
-covid_phenotype == '04_Covid_inpatient_death'
+covid_phenotype == '04_Covid_inpatient_death')
+AND date >= "2020-01-23"
 GROUP BY person_id_deid
 """)
 
-# Get all none deaths dates
+# Get first covid event dates for everyone, expect those with ONLY fatal events
 followup_time = spark.sql("""
 SELECT person_id_deid, MIN(date) AS first_covid_event
 FROM dars_nic_391419_j3w9t_collab.ccu013_covid_trajectory
-WHERE covid_phenotype != '04_Fatal_with_covid_diagnosis' OR
+WHERE (covid_phenotype != '04_Fatal_with_covid_diagnosis' OR
 covid_phenotype != '04_Fatal_without_covid_diagnosis' OR
-covid_phenotype != '04_Covid_inpatient_death'
+covid_phenotype != '04_Covid_inpatient_death')
+AND date >= "2020-01-23"
 GROUP BY person_id_deid
 """)
 
 # Calculate elapsed number of days between earliest event and study end (except if fatal)
 followup_time = followup_time.join(all_fatal, ['person_id_deid'], how='left')
 followup_time = followup_time.select(['person_id_deid', 'first_covid_event', 'death_date']) 
-followup_time = followup_time.withColumn('study_end', lit(datetime(2021, 3, 31)))
+followup_time = followup_time.withColumn('study_end', study_end_date)
 followup_time= followup_time.withColumn('followup_days', 
                                         when(followup_time['death_date'].isNull(), datediff(followup_time['study_end'], followup_time['first_covid_event'])).otherwise(-1))
     
@@ -116,28 +127,53 @@ followup_time.createOrReplaceGlobalTempView('followup_time')
 
 # COMMAND ----------
 
-# MAGIC %sql -- participants excluded due to lack of 28 days minimal followup time.
-# MAGIC 
-# MAGIC --- NOTE THIS number also include patients who enter the study after the cutoff time 
+# MAGIC %md
+# MAGIC Note that these counts are prior to joining on to skinny table, in other words could contain patients that don't meet the study inclusion
+
+# COMMAND ----------
+
+# MAGIC %sql 
+# MAGIC -- participants excluded due to lack of 28 days minimal followup time.
+# MAGIC -- OLD With study_end as 2021, 3, 31 ->     1,280,138
+# MAGIC -- OLD WIth study_end as 2021, 5, 31 ->     1,081,496
+# MAGIC -- current with study_end as 2021, 11, 30 ->   917,278
 # MAGIC SELECT count(DISTINCT person_id_deid) FROM global_temp.followup_time
 # MAGIC WHERE 28d_followup == 0
 
 # COMMAND ----------
 
+# MAGIC %sql
+# MAGIC --- CHECK that no follwup time is less than -1
+# MAGIC SELECT * FROM global_temp.followup_time
+# MAGIC where followup_days < -1
+
+# COMMAND ----------
+
 # MAGIC %md
 # MAGIC #### 1.1.2 Subset trajectory table
-# MAGIC Subset for cohor population - inclusion time and minimal followup
+# MAGIC Subset for cohort population - inclusion time and minimum follow-up
 
 # COMMAND ----------
 
 # MAGIC %sql
+# MAGIC --- Current @ 22.01.22 = 8,714,594 
 # MAGIC SELECT count (DISTINCT person_id_deid) from dars_nic_391419_j3w9t_collab.ccu013_covid_trajectory
 
 # COMMAND ----------
 
 # MAGIC %sql
+# MAGIC --- Current @ 22.01.22 = 8,714,455
+# MAGIC -- Removes only: 139 patients 
 # MAGIC SELECT count (DISTINCT person_id_deid) from dars_nic_391419_j3w9t_collab.ccu013_covid_trajectory
-# MAGIC WHERE date >= "2020-01-23" AND date <= "2021-05-31"
+# MAGIC WHERE date >= "2020-01-23" AND date <= "2021-11-30"
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC -- These are those records dated before index event
+# MAGIC -- NB 597 unique IDs here, but these patients could also have event within study dates
+# MAGIC SELECT * from dars_nic_391419_j3w9t_collab.ccu013_covid_trajectory
+# MAGIC WHERE date < "2020-01-23" OR date > "2021-11-30"
 
 # COMMAND ----------
 
@@ -150,18 +186,20 @@ followup_time.createOrReplaceGlobalTempView('followup_time')
 # MAGIC   dars_nic_391419_j3w9t_collab.ccu013_dp_skinny_patient_23_01_2020 tab2 
 # MAGIC ON 
 # MAGIC tab1.person_id_deid = tab2.NHS_NUMBER_DEID
-# MAGIC WHERE date >= "2020-01-23" AND date <= "2021-05-31"
+# MAGIC WHERE date >= "2020-01-23" AND date <= "2021-11-30"
 
 # COMMAND ----------
 
 # MAGIC %sql
 # MAGIC -- Value @ 150621 3567617
 # MAGIC -- Value @ 170821 3705123
+# MAGIC -- Value @ 220222 8103909
 # MAGIC SELECT count (DISTINCT person_id_deid) from global_temp.ccu013_covid_trajectory_paper_cohort_tmp
 
 # COMMAND ----------
 
 # MAGIC %sql 
+# MAGIC -- Remove those based on minimum follow-up criteria
 # MAGIC CREATE OR REPLACE GLOBAL TEMP VIEW ccu013_covid_trajectory_paper_cohort as
 # MAGIC WITH list_patients_to_omit AS (SELECT person_id_deid from global_temp.followup_time WHERE 28d_followup == 0)
 # MAGIC SELECT /*+ BROADCAST(list_patients_to_omit) */ t.* FROM global_temp.ccu013_covid_trajectory_paper_cohort_tmp as t
@@ -182,14 +220,16 @@ create_table("ccu013_covid_trajectory_paper_cohort")
 # MAGIC %sql
 # MAGIC -- value @ 150621 = 3454653
 # MAGIC -- value @ 170821 = 3469528
+# MAGIC -- value @ 220122 = 7244925
 # MAGIC SELECT count (DISTINCT person_id_deid) from dars_nic_391419_j3w9t_collab.ccu013_covid_trajectory_paper_cohort
 
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC -- value @ 150621 = 8683174
-# MAGIC -- value @ 170821 = 8825738
-# MAGIC SELECT count (*) from dars_nic_391419_j3w9t_collab.ccu013_covid_trajectory_paper_cohort
+# MAGIC -- value @ 150621 =  8683174
+# MAGIC -- value @ 170821 =  8825738
+# MAGIC -- value @ 220122 = 13990423
+# MAGIC SELECT count (*) as total_records from dars_nic_391419_j3w9t_collab.ccu013_covid_trajectory_paper_cohort
 
 # COMMAND ----------
 
@@ -207,13 +247,15 @@ create_table("ccu013_covid_trajectory_paper_cohort")
 # COMMAND ----------
 
 # MAGIC %sql
+# MAGIC -- OLD value     5,044,357
+# MAGIC -- Current value 8,714,594
 # MAGIC SELECT count (DISTINCT person_id_deid) from dars_nic_391419_j3w9t_collab.ccu013_covid_severity
 
 # COMMAND ----------
 
 # MAGIC %sql
 # MAGIC CREATE OR REPLACE GLOBAL TEMP VIEW ccu013_covid_severity_paper_cohort AS
-# MAGIC SELECT s.person_id_deid, s.date, s.covid_severity, s.ProductionDate FROM dars_nic_391419_j3w9t_collab.ccu013_covid_severity as s
+# MAGIC SELECT DISTINCT s.person_id_deid, s.date, s.covid_severity, s.ProductionDate FROM dars_nic_391419_j3w9t_collab.ccu013_covid_severity as s
 # MAGIC INNER JOIN dars_nic_391419_j3w9t_collab.ccu013_covid_trajectory_paper_cohort as t
 # MAGIC ON s.person_id_deid == t.person_id_deid
 
@@ -230,9 +272,15 @@ create_table("ccu013_covid_severity_paper_cohort")
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC -- value @ 150621 = 3454653
-# MAGIC -- value @ 170821 = 3469528
+# MAGIC -- value @ 150621   = 3454653
+# MAGIC -- value @ 170821   = 3469528
+# MAGIC -- Current @ 220122 = 7244925
 # MAGIC SELECT count(DISTINCT person_id_deid) FROM dars_nic_391419_j3w9t_collab.ccu013_covid_severity_paper_cohort
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC SELECT count(*) FROM dars_nic_391419_j3w9t_collab.ccu013_covid_severity_paper_cohort
 
 # COMMAND ----------
 
@@ -353,6 +401,7 @@ create_table("ccu013_covid_trajectory_graph_data")
 
 # MAGIC %sql
 # MAGIC -- 56609049
+# MAGIC -- 57032174
 # MAGIC SELECT count (distinct person_id_deid) FROM dars_nic_391419_j3w9t_collab.ccu013_covid_trajectory_graph_data
 
 # COMMAND ----------
@@ -402,22 +451,29 @@ create_table("ccu013_covid_trajectory_graph_data_wave1")
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC -- 56491308
+# MAGIC -- old value -     56491308
+# MAGIC -- current value = 56945027
 # MAGIC SELECT count(distinct person_id_deid) FROM dars_nic_391419_j3w9t_collab.ccu013_covid_trajectory_graph_data_wave1
 
 # COMMAND ----------
 
 # MAGIC %sql
+# MAGIC --- Old           = 57035046
+# MAGIC --- current value = 57490005
 # MAGIC SELECT count(*) FROM dars_nic_391419_j3w9t_collab.ccu013_covid_trajectory_graph_data_wave1
 
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC SELECT count (distinct person_id_deid) FROM dars_nic_391419_j3w9t_collab.ccu013_covid_trajectory_paper_cohort_wave1
+# MAGIC --- Old                  = 263,839
+# MAGIC --- OBS Not sure this is in use any more
+# MAGIC ---SELECT count (distinct person_id_deid) FROM dars_nic_391419_j3w9t_collab.ccu013_covid_trajectory_paper_cohort_wave1
 
 # COMMAND ----------
 
 # MAGIC %sql
+# MAGIC --- 3456753
+# MAGIC --- 7232055
 # MAGIC SELECT count (distinct person_id_deid) FROM dars_nic_391419_j3w9t_collab.ccu013_covid_trajectory_graph_data_wave1
 # MAGIC ---SELECT * FROM dars_nic_391419_j3w9t_collab.ccu013_covid_trajectory_graph_data_wave1
 # MAGIC WHERE covid_severity != "00_unaffected" ---AND date <= date_add(TO_DATE("2020-05-29"),28)
@@ -425,6 +481,8 @@ create_table("ccu013_covid_trajectory_graph_data_wave1")
 # COMMAND ----------
 
 # MAGIC %sql
+# MAGIC --- Old value       = 53034555
+# MAGIC --- Current value @ = 49712972
 # MAGIC SELECT count (distinct person_id_deid) FROM dars_nic_391419_j3w9t_collab.ccu013_covid_trajectory_graph_data_wave1
 # MAGIC ---SELECT * FROM dars_nic_391419_j3w9t_collab.ccu013_covid_trajectory_graph_data_wave1
 # MAGIC WHERE covid_severity == "00_unaffected" ---AND date <= date_add(TO_DATE("2020-05-29"),28)
@@ -437,6 +495,8 @@ create_table("ccu013_covid_trajectory_graph_data_wave1")
 # COMMAND ----------
 
 # MAGIC %sql
+# MAGIC --- Old value          = 55774208
+# MAGIC --- New value @ 220122 = 56225024
 # MAGIC --- Query to define all pople included in wave 2
 # MAGIC --- This is used below to subset the trajectory graph data
 # MAGIC SELECT count(distinct a.person_id_deid) FROM
@@ -577,7 +637,8 @@ create_table("ccu013_covid_trajectory_graph_data_wave1_icu")
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC -- 56491308
+# MAGIC -- OLD -        = 56491308
+# MAGIC -- New @ 220122 = 56945027
 # MAGIC SELECT count(distinct person_id_deid) FROM dars_nic_391419_j3w9t_collab.ccu013_covid_trajectory_graph_data_wave1_icu
 
 # COMMAND ----------
@@ -610,7 +671,8 @@ create_table("ccu013_covid_trajectory_graph_data_wave2_icu")
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC -- 55774208
+# MAGIC -- OLD - 55774208
+# MAGIC -- New = 56225024
 # MAGIC SELECT count(distinct person_id_deid) FROM dars_nic_391419_j3w9t_collab.ccu013_covid_trajectory_graph_data_wave2_icu
 
 # COMMAND ----------
@@ -622,40 +684,40 @@ create_table("ccu013_covid_trajectory_graph_data_wave2_icu")
 
 # COMMAND ----------
 
-import pyspark.sql.functions as funcs
-from pyspark.sql.window import Window
-reinfec = spark.sql(""" 
-SELECT person_id_deid, date FROM dars_nic_391419_j3w9t_collab.ccu013_covid_trajectory
-WHERE covid_phenotype in ('01_Covid_positive_test')
-""")
+#import pyspark.sql.functions as funcs
+#from pyspark.sql.window import Window
+#reinfec = spark.sql(""" 
+#SELECT person_id_deid, date FROM dars_nic_391419_j3w9t_collab.ccu013_covid_trajectory
+#WHERE covid_phenotype in ('01_Covid_positive_test')
+#""")
 
-reinfect_threshold = 90 # SIREN study
+#reinfect_threshold = 90 # SIREN study
 
 # Find days between consecutive positive COVID tests
 # Define window to particion by
-window = Window.partitionBy('person_id_deid').orderBy('date')
+#window = Window.partitionBy('person_id_deid').orderBy('date')
 # Calculate difference in days per ID 
-reinfec = reinfec.withColumn("days_passed", funcs.datediff(reinfec.date, 
-                                  funcs.lag(reinfec.date, 1).over(window)))
+#reinfec = reinfec.withColumn("days_passed", funcs.datediff(reinfec.date, 
+#                                  funcs.lag(reinfec.date, 1).over(window)))
 # Save to table
-reinfec.createOrReplaceGlobalTempView("ccu013_covid_reinfection_days_between_positive_tests")
-drop_table("ccu013_covid_reinfection_days_between_positive_tests")
-create_table("ccu013_covid_reinfection_days_between_positive_tests")
+#reinfec.createOrReplaceGlobalTempView("ccu013_covid_reinfection_days_between_positive_tests")
+#drop_table("ccu013_covid_reinfection_days_between_positive_tests")
+#create_table("ccu013_covid_reinfection_days_between_positive_tests")
 
 # Get the maximum difference in days between positive tests per individual
-w = Window.partitionBy('person_id_deid')
-reinfec_max_days = reinfec.withColumn('max_days_passed', f.max('days_passed').over(w))\
-    .where(f.col('days_passed') == f.col('max_days_passed'))\
-    .drop('max_days_passed')
+#w = Window.partitionBy('person_id_deid')
+#reinfec_max_days = reinfec.withColumn('max_days_passed', f.max('days_passed').over(w))\
+#    .where(f.col('days_passed') == f.col('max_days_passed'))\
+#    .drop('max_days_passed')
 
 ## Find reinfected using reinfect_threshold
-reinfec_max_days = reinfec_max_days.withColumn('reinfected', f.when((f.col('days_passed') >= reinfect_threshold),1).otherwise(0))
-reinfec_max_days = reinfec_max_days.where(f.col('reinfected') == 1)
+#reinfec_max_days = reinfec_max_days.withColumn('reinfected', f.when((f.col('days_passed') >= reinfect_threshold),1).otherwise(0))
+#reinfec_max_days = reinfec_max_days.where(f.col('reinfected') == 1)
 
 # Save to table
-reinfec_max_days.createOrReplaceGlobalTempView("ccu013_covid_reinfected_after_90_days")
-drop_table("ccu013_covid_reinfected_after_90_days")
-create_table("ccu013_covid_reinfected_after_90_days")
+#reinfec_max_days.createOrReplaceGlobalTempView("ccu013_covid_reinfected_after_90_days")
+#drop_table("ccu013_covid_reinfected_after_90_days")
+#create_table("ccu013_covid_reinfected_after_90_days")
 
 # COMMAND ----------
 
