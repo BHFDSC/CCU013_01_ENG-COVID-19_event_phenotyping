@@ -14,7 +14,7 @@
 Preprint now available on medRxiv:  
 
 > Understanding COVID-19 trajectories from a nationwide linked electronic health record cohort of 56 million people: phenotypes, severity, waves & vaccination.  
-Johan H Thygesen, Christopher R Tomlinson, Sam Hollings, Mehrdad A Mizani, Alex Handy, Ashley Akbari, Amitava Banerjee, Jennifer A Cooper, Alvina G Lai, Kezhi Li, Bilal A Mateen, Naveed Sattar, Reecha Sofat, Ana Torralbo, Honghan Wu, Angela Wood, Jonathan AC Sterne, Christina Pagel, William Whiteley, Cathie Sudlow, Harry Hemingway, Spiros Denaxas, CVD-COVID-UK Consortium.  
+Johan H Thygesen, Christopher R Tomlinson, Sam Hollings, Mehrdad A Mizani, Alex Handy, Ashley Akbari, Amitava Banerjee, Jennifer A Cooper, Alvina G Lai, Kezhi Li, Bilal A Mateen, Naveed Sattar, Reecha Sofat, Ana Torralbo, Honghan Wu, Angela Wood, Jonathan AC Sterne, Christina Pagel, William Whiteley, Cathie Sudlow, Harry Hemingway, Spiros Denaxas, on behalf of the CVD-COVID-UK Consortium and the CONVALESCENCE study.  
 *medRxiv* 2021.11.08.21265312; doi: https://doi.org/10.1101/2021.11.08.21265312
 
 <br>
