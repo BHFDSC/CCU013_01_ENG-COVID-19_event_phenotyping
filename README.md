@@ -4,14 +4,20 @@
 <br>
 <br>
 
-# Understanding COVID-19 trajectories from a nationwide linked electronic health record cohort of 56 million people: phenotypes, severity, waves & vaccination
+# COVID-19 trajectories among 57 million adults in England: a cohort study using electronic health records  
 **Johan H Thygesen, Christopher Tomlinson & Spiros Denaxas**
 
 <br>
 
 ## How to cite this work
 
-Preprint now available on medRxiv:  
+Now published in Lancet Digital Health:  
+
+> COVID-19 trajectories among 57 million adults in England: a cohort study using electronic health records.  
+Johan H Thygesen, Christopher Tomlinson, Sam Hollings, Mehrdad A Mizani, Alex Handy, Ashley Akbari, Amitava Banerjee, Jennifer A Cooper, Alvina G Lai, Kezhi Li, Bilal A Mateen, Naveed Sattar, Reecha Sofat, Ana Torralbo, Honghan Wu, Angela Wood, Jonathan AC Sterne, Christina Pagel, William Whiteley, Cathie Sudlow, Harry Hemingway, Spiros Denaxas, on behalf of theLongitudinal Health and Wellbeing COVID-19 National Core Study and the CVD-COVID-UK/COVID-IMPACT Consortium.  
+*Lancet Digital Health*. Published online June 8, 2022 https://www.thelancet.com/journals/landig/article/PIIS2589-7500(22)00091-7. DOI: https://doi.org/10.1016/S2589-7500(22)00091-7  
+  
+Preprint on medRxiv:  
 
 > Understanding COVID-19 trajectories from a nationwide linked electronic health record cohort of 56 million people: phenotypes, severity, waves & vaccination.  
 Johan H Thygesen, Christopher R Tomlinson, Sam Hollings, Mehrdad A Mizani, Alex Handy, Ashley Akbari, Amitava Banerjee, Jennifer A Cooper, Alvina G Lai, Kezhi Li, Bilal A Mateen, Naveed Sattar, Reecha Sofat, Ana Torralbo, Honghan Wu, Angela Wood, Jonathan AC Sterne, Christina Pagel, William Whiteley, Cathie Sudlow, Harry Hemingway, Spiros Denaxas, on behalf of the CVD-COVID-UK Consortium and the CONVALESCENCE study.  
