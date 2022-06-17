@@ -7,8 +7,6 @@
 # COVID-19 trajectories among 57 million adults in England: a cohort study using electronic health records  
 **Johan H Thygesen, Christopher Tomlinson & Spiros Denaxas**
 
-<br>
-
 ## How to cite this work
 
 Now published in Lancet Digital Health:  
@@ -23,19 +21,15 @@ Preprint on medRxiv:
 Johan H Thygesen, Christopher R Tomlinson, Sam Hollings, Mehrdad A Mizani, Alex Handy, Ashley Akbari, Amitava Banerjee, Jennifer A Cooper, Alvina G Lai, Kezhi Li, Bilal A Mateen, Naveed Sattar, Reecha Sofat, Ana Torralbo, Honghan Wu, Angela Wood, Jonathan AC Sterne, Christina Pagel, William Whiteley, Cathie Sudlow, Harry Hemingway, Spiros Denaxas, on behalf of the CVD-COVID-UK Consortium and the CONVALESCENCE study.  
 *medRxiv* 2021.11.08.21265312; doi: https://doi.org/10.1101/2021.11.08.21265312
 
-<br>
-
 ## Code
 
 Click [here](https://github.com/BHFDSC/CCU013_01_ENG-COVID-19_event_phenotyping/tree/main/code) to view the analysis code.
 
 Phenotyping algorithms and codelists are available [here](https://github.com/BHFDSC/CCU013_01_ENG-COVID-19_event_phenotyping/tree/main/phenotypes)
 
-<br>
-
 ## Project approval
 
-Data access approval was granted to the CVD-COVID-UK consortium (under project proposal CCU013: High-throughput electronic health record phenotyping approaches) through the NHS Digital online [Data Access Request Service](https://digital.nhs.uk/services/data-access-request-service-dars) (ref. DARS-NIC-381078-Y9C5K). NHS Digital data have been made available for research under the [Control of Patient Information (COPI) notice](https://digital.nhs.uk/coronavirus/coronavirus-covid-19-response-information-governance-hub/control-of-patient-information-copi-notice) which mandated the sharing of national electronic health records for COVID-19 research. Further details are available within the supplementary section of the manuscript.
+Data access approval was granted to the CVD-COVID-UK consortium (under project proposal [CCU013: High-throughput electronic health record phenotyping approaches](https://github.com/BHFDSC/CCU013)) through the NHS Digital online [Data Access Request Service](https://digital.nhs.uk/services/data-access-request-service-dars) (ref. DARS-NIC-381078-Y9C5K). NHS Digital data have been made available for research under the [Control of Patient Information (COPI) notice](https://digital.nhs.uk/coronavirus/coronavirus-covid-19-response-information-governance-hub/control-of-patient-information-copi-notice) which mandated the sharing of national electronic health records for COVID-19 research. Further details are available within the supplementary section of the manuscript.
 
 ## License
 
